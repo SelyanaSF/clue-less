@@ -9,3 +9,8 @@ dependencies:
   - scikit-learn=0.22
   - pip:
    - kaggle==1.5
+   - pygame
+   - pyscroll
+   - pytmx==3.21.6
+
+

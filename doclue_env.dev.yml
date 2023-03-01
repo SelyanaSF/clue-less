@@ -1,0 +1,11 @@
+name: doclue_env_test
+
+dependencies:
+- pip:
+  - pylint
+  - pytest
+  - pytest-cov
+  - pytest-mock
+  - pytest-mccabe
+  - pytest-pep8
+  - pytest-pylint
