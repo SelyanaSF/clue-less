@@ -10,4 +10,4 @@
 
 ## Run the game:
 On your main directory, run \
-`python3 start.py`
+`start.py`
