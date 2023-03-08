@@ -9,5 +9,6 @@
   `conda activate doclue_env`
 
 ## Run the game:
-On your main directory, run \
-`start.py`
+
+On your main directory, run `start.py` or `python3 start.py`
+
