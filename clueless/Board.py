@@ -11,15 +11,12 @@ class Board:
         self.boardSurface.fill('bisque3')
         data_folder = Path("clueless/data/graphics/")
 
-        #self.cornerRoomSurface = pygame.image.load('clueless\data\graphics\corner.PNG')
         self.cornerRoomSurface = pygame.image.load(data_folder / 'corner.PNG')
         self.cornerRoomSurface = pygame.transform.scale(self.cornerRoomSurface, (100, 100))
 
-        #self.normalRoomSurface = pygame.image.load('clueless\data\graphics\window.PNG')
         self.normalRoomSurface = pygame.image.load(data_folder / 'window.PNG')
         self.normalRoomSurface = pygame.transform.scale(self.normalRoomSurface, (100, 100))
 
-        #self.hallway = pygame.image.load('clueless\data\graphics\hallway.PNG')
         self.hallway = pygame.image.load(data_folder / 'hallway.PNG')
         self.hallway = pygame.transform.scale(self.hallway, (100, 50))
 
