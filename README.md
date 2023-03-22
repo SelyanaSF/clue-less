@@ -12,3 +12,14 @@
 
 On your main directory, run `start.py` or `python3 start.py`
 
+## Run multi-player game:
+
+**make sure your own computer IP is in the code so that it can be run**
+
+open multiple terminals
+1 terminal for the server/splash screen
+    run `clueless\Server.py`
+    to exit, must kill the terminal (TODO: exit by keyboard shortcut)
+3-6 terminals for players
+    run `start.py` in each
+    to exit, close out the client window
