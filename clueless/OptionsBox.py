@@ -44,8 +44,9 @@ class OptionsBox:
 
         return [self.enterRect, self.closeRect]
 
-    def closeOption(self, screen):    
-        pygame.draw.rect(screen, (0, 0, 0), self.rect, width=0, border_radius=5)
+    def closeOption(self, screen, color):    
+        pygame.draw.rect(screen, color, self.rect, width=0, border_radius=5)
+        
         
 
 

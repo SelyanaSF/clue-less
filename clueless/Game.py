@@ -4,6 +4,7 @@ from clueless import Board, Button, Network
 from clueless.Network import Network
 import pickle
 import pygame
+import random
 
 DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
 
@@ -22,6 +23,8 @@ class Game:
         pygame.display.set_caption(player_caption)
         self.state = "START"
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+        self.base_color = self.randomise_color()
+        self.screen.fill(self.base_color)
         self.clock = pygame.time.Clock()
         self.gameLoop()
 
@@ -96,7 +99,7 @@ class Game:
         #Manually record the rectangle position of close button. Everytime this button is pressed, close the options box
         closeRect = pygame.Rect(820, 570, 55, 30)
         if (closeRect.collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1 and self.state == 'CHOOSING'):
-            board.closeRoomOptions(self.screen)
+            board.closeRoomOptions(self.screen, self.base_color)
             self.state = "START"
             isRoomSelectionActive = False
 
@@ -106,3 +109,6 @@ class Game:
     def tick(self):
         self.clock.tick(self.FPS)
 
+    def randomise_color(self):
+        list_of_color = [(224,238,255), (203,204,255), (255,216,171), (255,234,253), (162,131,91), (110,137,215), (183,142,55), (234,231,240), (204,153,255), (126,135,145), (86,180,233), (0,0,0),(213,94,0), (255,255,255), (75,0,146), (64,176,166)]
+        return list_of_color[random.randint(0,len(list_of_color)-1)]
