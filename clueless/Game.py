@@ -87,6 +87,10 @@ class Game:
         isAccuseSelectionActive = board.loadButton(self.screen, "Accuse", buttonXPos, buttonYPos + buttonDistance)
         isSuggestSelectionActive = board.loadButton(self.screen, "Suggest", buttonXPos, buttonYPos + buttonDistance*2)
         isEndTurnSelectionActive = board.loadButton(self.screen, "End Turn", buttonXPos, buttonYPos + buttonDistance*3)
+        
+        # Initialize valid players 
+        # TO DO: players should be added to screen later depending on which tokens are chosen (here for now to test)
+        board.load_player_tokens(self.screen, board)
 
         mousePos = pygame.mouse.get_pos()
         if isRoomSelectionActive:
