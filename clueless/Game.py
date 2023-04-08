@@ -1,9 +1,9 @@
 # Game Module
 from sys import exit
-import Board, Button, Network
-from Network import Network
-from Deck import ClueDeck
-from Weapon_image import Weapon_Image
+from clueless import Board, Button, Network
+from clueless.Network import Network
+from clueless.Deck import ClueDeck
+from clueless.Weapon_image import Weapon_Image
 import pickle
 import pygame
 import random
@@ -64,50 +64,66 @@ class Game:
                 break
 
             events = pygame.event.get()
-            self.checkEvents(events)
-            self.addView()
+            self.check_events(events)
+            self.add_view(events)
             
         # when pygame.QUIT event happens, change self.playing to False 
         # the while loop will end and quit the game
         pygame.quit()
 
-    def checkEvents(self, events) :
+    def check_events(self, events) :
         for event in events:
             if event.type == pygame.QUIT:
                 self.playing = False
 
-    def addView(self):
+    def add_view(self, events):
         # Add board
         board = Board.Board()
-        board.loadTiles(self.screen, board)
+        board.load_tiles(self.screen, board)
 
         # Initialize Buttons
-        buttonYPos = 75
-        buttonXPos = 650
-        buttonDistance = 60
-        isRoomSelectionActive = board.loadButton(self.screen, "Go To Room", buttonXPos, buttonYPos)
-        isAccuseSelectionActive = board.loadButton(self.screen, "Accuse", buttonXPos, buttonYPos + buttonDistance)
-        isSuggestSelectionActive = board.loadButton(self.screen, "Suggest", buttonXPos, buttonYPos + buttonDistance*2)
-        isEndTurnSelectionActive = board.loadButton(self.screen, "End Turn", buttonXPos, buttonYPos + buttonDistance*3)
+        button_Y_Pos = 75
+        button_X_Pos = 650
+        button_distance = 60
+        is_Room_Selection_Active = board.load_button(self.screen, "Go To Room", button_X_Pos, button_Y_Pos)
+        is_Accuse_Selection_Active = board.load_button(self.screen, "Accuse", button_X_Pos, button_Y_Pos + button_distance)
+        is_Suggest_Selection_Active = board.load_button(self.screen, "Suggest", button_X_Pos, button_Y_Pos + button_distance*2)
+        isEndTurnSelectionActive = board.load_button(self.screen, "End Turn", button_X_Pos, button_Y_Pos + button_distance*3)
         
         # Initialize valid players 
         # TO DO: players should be added to screen later depending on which tokens are chosen (here for now to test)
         board.load_player_tokens(self.screen, board)
 
         mousePos = pygame.mouse.get_pos()
-        if isRoomSelectionActive:
-            self.state = "CHOOSING"
-            board.loadRoomOptions(self.screen)
+        if is_Room_Selection_Active:
+            self.state = "CHOOSING_ROOM"
+            board.load_options(self.screen, self.state, events)
             turn_data = self.network.build_package(self.state, str(mousePos))
             #print(turn_data)
             self.network.send(turn_data)
 
+        if is_Accuse_Selection_Active:
+            self.state = "ACCUSING"
+            board.load_options(self.screen, self.state, events)
+            turn_data = self.network.build_package(self.state, str(mousePos))
+            #print(turn_data)
+            self.network.send(turn_data)
+
+        if is_Suggest_Selection_Active:
+            self.state = "SUGGESTING"
+            board.load_options(self.screen, self.state, events)
+            turn_data = self.network.build_package(self.state, str(mousePos))
+            #print(turn_data)
+            self.network.send(turn_data)
+
+        # if player chooose end turn, then it passes the turn to others.
+
         #Manually record the rectangle position of close button. Everytime this button is pressed, close the options box
         closeRect = pygame.Rect(820, 570, 55, 30)
-        if (closeRect.collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1 and self.state == 'CHOOSING'):
-            board.closeRoomOptions(self.screen, self.base_color)
+        if (closeRect.collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1 and (self.state == 'CHOOSING_ROOM' or self.state == "ACCUSING" or self.state == "SUGGESTING")):
+            board.close_room_options(self.screen, self.base_color)
             self.state = "START"
-            isRoomSelectionActive = False
+            is_Room_Selection_Active = False
 
     def render(self):
         pygame.display.update()
