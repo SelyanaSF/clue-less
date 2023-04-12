@@ -1,6 +1,6 @@
 import random
 
-class GameLogic:
+class Game_processor:
     def __init__(self, players, weapons, rooms, solution):
         self.players = players
         self.weapons = weapons

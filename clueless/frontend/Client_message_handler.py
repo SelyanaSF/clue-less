@@ -6,7 +6,7 @@ import threading
 HOST_ADDR = socket.gethostbyname(socket.gethostname())
 HOST_PORT = 8080
 
-class Network:
+class Client_message_handler:
     def __init__(self):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server = HOST_ADDR

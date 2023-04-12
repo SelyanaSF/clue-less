@@ -1,7 +1,7 @@
 # Player Module
 import pygame
 
-class Player(pygame.sprite.Sprite):    
+class Token(pygame.sprite.Sprite):    
     
     def __init__(self, name, pos_x, pos_y, width, height, color):
         super().__init__()
@@ -24,12 +24,3 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         self.rect = (self.x, self.y, self.width, self.height)
-
-
-    # Return player status (0 = active, 1 = lost, and 2 = inactive)
-    def get_status(self):
-        return self.player_status
-
-    # Update player status (0 = active, 1 = lost, and 2 = inactive)
-    def set_status(self, status):
-        self.player_status = status

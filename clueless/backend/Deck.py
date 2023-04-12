@@ -1,6 +1,6 @@
 import random
 
-class ClueDeck:
+class Deck:
     def __init__(self, players):
         self.players = players
         self.characters = ["Miss Scarlett", "Colonel Mustard", "Mrs. White", "Mr. Green", "Mrs. Peacock", "Professor Plum"]

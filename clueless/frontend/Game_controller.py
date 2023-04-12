@@ -1,16 +1,18 @@
 # Game Module
 from sys import exit
-from clueless import Board, Button, Network
-from clueless.Network import Network
-from clueless.Deck import ClueDeck
-from clueless.Weapon_image import Weapon_Image
+from clueless.frontend import Client_message_handler
+from clueless.frontend.Client_message_handler import Client_message_handler
+from clueless.backend.Deck import Deck
+from clueless.frontend.Weapon_image import Weapon_Image
 import pickle
 import pygame
 import random
 
+from clueless.frontend import Button, Client_game_board
+
 DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
 
-class Game:
+class Game_controller:
     WIDTH = 875
     HEIGHT = 700
     FPS = 60
@@ -18,7 +20,7 @@ class Game:
     def __init__(self):
         pygame.init()
         
-        self.network = Network()
+        self.network = Client_message_handler()
         self.id = int(self.network.get_id())
         self.playing = True
         player_caption = "Clue-Less Player " + str(self.id)
@@ -78,7 +80,7 @@ class Game:
 
     def add_view(self, events):
         # Add board
-        board = Board.Board()
+        board = Client_game_board.Client_game_board()
         board.load_tiles(self.screen, board)
 
         # Initialize Buttons
@@ -154,7 +156,7 @@ for i in range(num_players):
 print("List of players=", players)   
 print()
 
-deck = ClueDeck(players)
+deck = Deck(players)
 dealt_cards = deck.deal()
 
 for key, value in dealt_cards.items():

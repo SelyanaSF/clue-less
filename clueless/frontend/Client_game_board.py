@@ -1,11 +1,13 @@
 # Board Module
 import pygame
-from clueless import Button, OptionsBox, Player
+from clueless.frontend import Token
 from pathlib import Path
+
+from clueless.frontend import Button, OptionsBox
 
 data_folder = Path("clueless/data/graphics/")
 
-class Board:
+class Client_game_board:
     WIDTH = 550
     HEIGHT = 550
     board_Y_Pos = 75
