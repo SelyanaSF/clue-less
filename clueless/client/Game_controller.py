@@ -1,14 +1,12 @@
 # Game Module
 from sys import exit
-from clueless.frontend import Client_message_handler
-from clueless.frontend.Client_message_handler import Client_message_handler
-from clueless.backend.Deck import Deck
-from clueless.frontend.Weapon_image import Weapon_Image
+from clueless.client.Client_message_handler import Client_message_handler
+from clueless.server.Deck import Deck
+from clueless.client.Weapon_image import Weapon_Image
+from clueless.client import Button, Client_game_board
 import pickle
 import pygame
 import random
-
-from clueless.frontend import Button, Client_game_board
 
 DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
 

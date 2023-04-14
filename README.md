@@ -15,7 +15,7 @@ On your main directory, run `start.py` or `python3 start.py`
 Open multiple terminals
 - 1 terminal for the server/splash screen
   1. To start the server, run
-  `clueless\Server.py`
+  `clueless\server\Server.py`
   2. To exit the server, you must kill the terminal (TODO: exit by keyboard shortcut)
   
 - 3-6 terminals for players

@@ -1,7 +1,7 @@
 import pygame
 from pathlib import Path
 
-class OptionsBox:
+class Options_Box:
 
     X_Pos = 650
     Y_Pos = 400
