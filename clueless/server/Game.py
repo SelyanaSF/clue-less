@@ -8,6 +8,9 @@ class Game:
         self.case_file = case_file
         self.turn_state = turn_state
         self.game_status = game_status
+        
+        # Find out where Game is initialized, loop through players and map their name to id
+        # self.player_name_to_connectionid_dict = 
 
     def get_turn_status():
         pass

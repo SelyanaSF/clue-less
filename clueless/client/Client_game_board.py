@@ -141,3 +141,8 @@ class Client_game_board:
         room_options = Options_Box.OptionsBox()
         room_options.close_option(screen, color)
 
+    def display_update(self, screen, board, update_text):        
+        pygame.font.init() 
+        my_font = pygame.font.SysFont(None, 30)
+        text_surface = my_font.render(update_text, False, (0, 0, 0))
+        screen.blit(text_surface, (650, 300))

@@ -28,9 +28,9 @@ class Game_controller:
         self.base_color = self.randomise_color()
         self.screen.fill(self.base_color)
         self.clock = pygame.time.Clock()
-        self.gameLoop()
+        self.game_loop()
 
-    def gameLoop(self):
+    def game_loop(self):
 
         prev_game_state = DEFAULT_GAME
         print("You are Player ", self.id)
@@ -66,6 +66,11 @@ class Game_controller:
             events = pygame.event.get()
             self.check_events(events)
             self.add_view(events)
+            
+            # If some condition, display this message type to these players with this message
+            self.display_update({'message_type':'WIN',
+                                 'message_to':[2,3],
+                                 'message':'YOU WIN'})
             
         # when pygame.QUIT event happens, change self.playing to False 
         # the while loop will end and quit the game
@@ -135,32 +140,52 @@ class Game_controller:
         list_of_color = [(224,238,255), (203,204,255), (255,216,171), (255,234,253), (162,131,91), (110,137,215), (183,142,55), (234,231,240), (204,153,255), (126,135,145), (86,180,233), (0,0,0),(213,94,0), (255,255,255), (75,0,146), (64,176,166)]
         return list_of_color[random.randint(0,len(list_of_color)-1)]
 
+    def display_update(self, message_dict): 
+        '''
+        INPUT: message_dict : dictionary containing the following key-value pairs
+                'message_type' : 'type of message determines where and who sees message'
+                'message_to' : 'player names to display message to'
+                'message' : 'some text message to display on screen'
+        OUTPUT: N/A
+        '''
+        board = Client_game_board.Client_game_board()
+        update_text = message_dict['message']
+        # Read dictionary message type to know which screens get this message
+        #   Map client network ID to players
+        
+        # Map message type to text message
+        
+        # Feed text message to game board
+        for client_id in message_dict['message_to']:
+            if self.id == client_id:
+                board.display_update(self.screen, board, update_text)
+    
 ################################################################################
 # Instantiate Deck class
 # Remove docstring to execute 
 
 #Enter the number of players and their names
 
-num_players= int(input("Enter the number of players: "))
+# num_players= int(input("Enter the number of players: "))
 
-assert 6 >= num_players >=3, f"A total number of 3-6 players are allowed to\
- participate in this game."
+# assert 6 >= num_players >=3, f"A total number of 3-6 players are allowed to\
+#  participate in this game."
 
-players= []
+# players= []
 
-for i in range(num_players):
-    player_name= input(f"Enter the name of player {i+1}: ")
-    players.append(player_name)
-print("List of players=", players)   
-print()
+# for i in range(num_players):
+#     player_name= input(f"Enter the name of player {i+1}: ")
+#     players.append(player_name)
+# print("List of players=", players)   
+# print()
 
-deck = Deck(players)
-dealt_cards = deck.deal()
+# deck = Deck(players)
+# dealt_cards = deck.deal()
 
-for key, value in dealt_cards.items():
-    print(f"{key}: {value}")
-print()
-print("Secret deck:", deck.secret_deck)
+# for key, value in dealt_cards.items():
+#     print(f"{key}: {value}")
+# print()
+# print("Secret deck:", deck.secret_deck)
 
 ################################################################################
 

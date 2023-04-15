@@ -1,6 +1,10 @@
 import random
 
 class Game_processor:
+    WEAPONS = ['candlestick','dagger','leadpipe','revolver','rope','wrench']
+    TOKENS = ['Professor Plum','Mrs Peacock','Mr Green','Mrs White','Miss Scarlet','Colonel Mustard']
+    ROOMS = ['Study','Library','Lounge', 'Billiard Room', 'Dining Room', 'Conservatory', 'Ballroom', 'Kitchen']
+
     def __init__(self, players, weapons, rooms, solution):
         self.players = players
         self.weapons = weapons
@@ -80,16 +84,42 @@ class Game_processor:
     # If the accusation is correct, it also sets the game_over attribute to True.  
     def accuse(self, player, weapon, room):
         accusation = {'player': player, 'weapon': weapon, 'room': room}
-        self.accusations.append(accusation)
-        if accusation['player'] == self.solution['player'] and accusation['weapon'] == self.solution['weapon'] and accusation['room'] == self.solution['room']:
+        self.accusations.append(accusation) # QUESTION: What's the purpose of appending accusations?
+        # If accusation is correct
+        if player == self.solution['player'] and weapon == self.solution['weapon'] and room == self.solution['room']:
             self.game_over = True
+            # return winner name
+            return True
+        # If accusation is incorrect
+        else: 
+            # TO DO 
+            # set player to lost/inactive
+            # only display lost and case file to losing player
+            # continue to next turn
+            return False
+        # TO DO 
+        #   update game_status?
+        #   send game_status to Game_message_handler
+        #   Game_message_handler receive_game_status()
+        #   Game_message_handler build_return_package()
+        #   someone send package to Client_message_handler
 
     # This method checks if an accusation is valid. It returns a Boolean value 
     # indicating whether or not the accusation is valid.   
     def validate_accusation(self, accusation):
-        if accusation['player'] != self.solution['player'] or accusation['weapon'] != self.solution['weapon'] or accusation['room'] != self.solution['room']:
-            return False
-        return True
+        '''
+        INPUT: accusation : list of three user inputs
+        OUTPUT: True if accusation is valid, False otherwise
+        '''
+        # Precondition: accusation is cleaned up syntax to match my lists of weapons, tokens, and rooms
+        has_weapon = False
+        has_token = False
+        has_room = False
+        for guess in accusation:
+            if guess in self.WEAPONS: has_weapon = True
+            elif guess in self.TOKENS: has_token = True
+            elif guess in self.ROOMS: has_room = True
+        return has_weapon and has_token and has_room
     
     # This method returns the list of accusations made by a specific player.
     def get_accusations_for_player(self, player):
@@ -102,6 +132,9 @@ class Game_processor:
     # This method returns the list of cards held by a specific player.   
     def get_player_cards(self, player):
         return self.player_cards[player]
+
+
+
 
 # create a new game
 game = GameLogic()
