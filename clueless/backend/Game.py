@@ -9,6 +9,9 @@ class Game:
         self.turn_state = turn_state
         self.game_status = game_status
 
+    def __init__(self) -> None:
+        pass
+
     def get_turn_status():
         pass
 

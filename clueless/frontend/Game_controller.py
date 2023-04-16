@@ -11,6 +11,7 @@ import random
 from clueless.frontend import Button, Client_game_board
 
 DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
+server_update = dict({})
 
 class Game_controller:
     WIDTH = 875
@@ -25,6 +26,7 @@ class Game_controller:
         self.playing = True
         player_caption = "Clue-Less Player " + str(self.id)
         pygame.display.set_caption(player_caption)
+        self.prev_game_state = DEFAULT_GAME
         self.state = "START"
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.base_color = self.randomise_color()
@@ -34,7 +36,7 @@ class Game_controller:
 
     def gameLoop(self):
 
-        prev_game_state = DEFAULT_GAME
+        #prev_game_state = DEFAULT_GAME
         print("You are Player ", self.id)
 
         while self.playing:
@@ -42,13 +44,20 @@ class Game_controller:
             self.render()
 
             try:
+                # #game_update = self.network.get_server_update()
+                # game_data = self.build_package("get", "")
+                # print(game_data)
+                # game = self.network.send_receive(game_data)
+                # print(game)
+                # self.network.process_server_update(game)
+
                 game_data = self.network.build_package("get", "")
-                #print(game_data)
+                print(game_data)
                 game = self.network.send_receive(game_data)
 
                 #receive updates
                 if game != prev_game_state:
-                    #print(game)
+                    print(game)
                     game_player_id = game['player_turn_id']
                     game_player_status = game['player_turn_type']
                     game_player_turn = game['player_turn_details']
@@ -64,6 +73,8 @@ class Game_controller:
                 run = False
                 print("Couldn't get game")
                 break
+
+
 
             events = pygame.event.get()
             self.check_events(events)
@@ -141,28 +152,21 @@ class Game_controller:
 # Instantiate Deck class
 # Remove docstring to execute 
 
-#Enter the number of players and their names
+# players= []
 
-num_players= int(input("Enter the number of players: "))
+# for i in range(num_players):
+#     player_name= input(f"Enter the name of player {i+1}: ")
+#     players.append(player_name)
+# print("List of players=", players)   
+# print()
 
-assert 6 >= num_players >=3, f"A total number of 3-6 players are allowed to\
- participate in this game."
+# deck = Deck(players)
+# dealt_cards = deck.deal()
 
-players= []
-
-for i in range(num_players):
-    player_name= input(f"Enter the name of player {i+1}: ")
-    players.append(player_name)
-print("List of players=", players)   
-print()
-
-deck = Deck(players)
-dealt_cards = deck.deal()
-
-for key, value in dealt_cards.items():
-    print(f"{key}: {value}")
-print()
-print("Secret deck:", deck.secret_deck)
+# for key, value in dealt_cards.items():
+#     print(f"{key}: {value}")
+# print()
+# print("Secret deck:", deck.secret_deck)
 
 ################################################################################
 
