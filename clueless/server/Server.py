@@ -9,10 +9,11 @@ from clueless.server.Game_processor import Game_processor
 
 HOST_ADDR = socket.gethostbyname(socket.gethostname())
 HOST_PORT = 8080
-DEFAULT_TURN = dict({'header': 'none', 'player_id': '0', 'data': ''})
-DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
+DEFAULT_TURN = dict({'header': 'None', 'player_id': 'None', 'data': ''})
+DEFAULT_GAME = dict({'player_count': 0, 'player_token': '0', 'turn_status': ''})
 PLAYER_MAX = 6
 PLAYER_MIN = 3
+SKIP = 'skip'
 
 class Server:
 
@@ -32,56 +33,37 @@ class Server:
     def threaded_client(self, conn, player_id, game):
         conn.send(pickle.dumps(player_id))
         reply = ""
-        prev_player_turn = DEFAULT_TURN
-
+        prev_client_message = DEFAULT_TURN
+        server_update = game
         connected = True
 
         while connected:
             try:
-                print("Server receiving player data")
-                #player_data = Game_message_handler.receive_client_update(conn)
-                player_data = pickle.loads(conn.recv(4096))
-                print("Server received player data")
+                #print("Server receiving player data")
+                client_message = Game_message_handler.receive_client_update(conn)
+                #print("Server received player data")
     
-                if not player_data:
+                if not client_message:
                     print("Disconnected")
                     connected = False
                     break
                 else:
-                    # player_turn = Game_message_handler.process_client_update(player_data)
-                    # if player_turn != prev_player_turn:
-                    #     print(player_turn)
-                    #     game_status = Game_processor.player_take_turn(player_turn)
-                    #     print(game_status)
-                    #     prev_player_turn = player_turn
+                    if client_message != prev_client_message:
+                        player_turn = Game_message_handler.process_client_update(client_message)
 
-                    #     server_update = Game_message_handler.build_game_package(game_status)
-                    #     print(server_update)
-                    #     Game_message_handler.send_game_update(server_update)
-                    #     print("sent to client")
+                        if player_turn['turn_status'] != SKIP:
+                            game_status = Game_processor.player_take_turn(player_turn)
+                            #print(game_status)
 
-                    if player_data != prev_player_turn:
-                        player_status = player_data['header']
-                        player_id = player_data['player_id']
-                        print(player_status)
+                            server_update = Game_message_handler.build_game_package(game_status)
+                        else:
+                            server_update = player_turn
 
-                        if player_status == "reset":
-                            pass
-                        elif player_status != "get":
-                            player_details = player_data['data']
-                            print("player_details")
-                            game['player_turn_id'] = player_id
-                            game['player_turn_type'] = player_status
-                            game['player_turn_details'] = player_details
-                            print(game)
-                            if player_status == "CHOOSING":
-                                    print("Player taking turn: Player ", player_id)
-                                    print("Player chooses to move to location ", player_details)
-                                    print()
-                            
-                            prev_player_turn = player_data
+                        prev_client_message = client_message
 
-                    conn.send(pickle.dumps(game))
+                #print(server_update)
+                Game_message_handler.send_game_update(conn, server_update)
+                #print("sent to client")
             except:
                 break
 

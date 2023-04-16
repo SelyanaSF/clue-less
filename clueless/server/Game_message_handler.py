@@ -13,22 +13,23 @@ class Game_message_handler:
         return client_update
 
     def process_client_update(player_data):
-        player_turn = dict()
+        #print("processing client message")
+        player_turn = {}
         player_status = player_data['header']
         player_id = player_data['player_id']
-        #print(status)
 
         if player_status == "reset":
             pass        
-        elif player_status != "get":
-            player_details = player_data['data']
+        elif player_status == "get":
+            player_turn['player_token'] = player_id
+            player_turn['turn_status'] = 'skip'
+        else:
+            player_turn['player_token'] = player_id
+            player_turn['turn_status'] = player_status
 
-            player_turn['player_turn_id'] = player_id
-            player_turn['player_turn_type'] = player_status
-            player_turn['player_turn_details'] = player_details
-
+        #print(player_turn)
         return player_turn
 
 
-    def build_game_package():
+    def build_game_package(game_status):
         pass

@@ -25,7 +25,7 @@ class Client_message_handler:
             pass
 
     def send_receive(self, data):
-        print("Player sending information to the Server")
+        #print("Player sending information to the Server")
         try:
             self.client.send(pickle.dumps(data))
             return pickle.loads(self.client.recv(4096))
@@ -53,21 +53,20 @@ class Client_message_handler:
     
     def get_server_update(self):
         game_data = self.build_package("get", "")
-        #print(game_data)
         game = self.send_receive(game_data)
-
         return game
 
-    def process_server_update(self, game):
-        if game != self.prev_game_state:
+    def process_server_update(self, game, prev_game_state):
+        #print("processing server message")
+        if game != prev_game_state:
             #print(game)
-            game_player_id = game['player_turn_id']
-            game_player_status = game['player_turn_type']
-            game_player_turn = game['player_turn_details']
+            game_player_id = game['player_token']
+            game_player_status = game['turn_status']
+            #game_player_turn = game['player_turn_details']
 
             if game_player_status == 'CHOOSING':
                 print("Player taking turn: Player ", game_player_id)
-                print("Player chooses to move to location ", game_player_turn)
+                #print("Player chooses to move to location ", game_player_turn)
                 print()
 
-            self.prev_game_state = game
+        return game
