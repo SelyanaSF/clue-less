@@ -1,3 +1,3 @@
-from clueless.backend.Server import Server
+from clueless.server.Server import Server
 
 server = Server()
