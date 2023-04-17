@@ -44,7 +44,8 @@ class Player:
     def get_player_current_location(self):
         return self.player_current_location    
       
-      
+    def set_player_hand(self, player_hand):
+        self.player_hand= player_hand
       
     ''' SETTER FUNCTIONS '''
     # Update the player's old location and current location

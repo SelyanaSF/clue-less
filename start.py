@@ -1,3 +1,3 @@
-from clueless.client.Game_controller import Game_controller
+from clueless.Game import Game
 
-game = Game_controller()
+game = Game()
