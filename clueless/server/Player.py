@@ -1,9 +1,9 @@
 class Player:
         
-    def __init__(self, player_name, player_id, player_current_location):
+    def __init__(self, player_name, player_id):
         self.player_name = player_name                          # string
         self.player_id = player_id                              # int
-        self.player_current_location = player_current_location  # Tile
+        self.player_current_location = None                     # Tile
         self.player_old_location = None         
         self.player_hand = None                                 # Deck
         self.turn_status = 'FIRST'                              # Enum (int)
