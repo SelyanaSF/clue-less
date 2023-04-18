@@ -23,16 +23,6 @@ class Game_processor:
         pass
 
 
-    # This method determines what turn the player is taking and then routes to 
-    # appropriate game logic functions to carry out turn accordingly
-    def player_take_turn(player_turn):
-        if player_turn['player_status'] == "CHOOSING":
-            print("Player taking turn: Player ", player_turn['player_id'])
-            print("Player chooses to move to location ", player_turn['player_details'])
-            print()
-        return player_turn
-
-
 #      # This method deals out the cards in the deck to each player. It does not
 #      # return anything, but it modifies the player_cards and deck attributes 
 #      # of the ClueGame object.   
@@ -159,3 +149,14 @@ class Game_processor:
 #     print("Valid suggestion!")
 # else:
 #     print("Invalid suggestion.")
+
+    # This method determines what turn the player is taking and then routes to 
+    # appropriate game logic functions to carry out turn accordingly
+    def player_take_turn(player_turn):
+        print("Player taking turn: Player ", player_turn['player_id'])
+
+        if player_turn['player_status'] == "movement":
+            print("Player chooses to move to location ", player_turn['player_location'])
+            print()
+
+        return player_turn

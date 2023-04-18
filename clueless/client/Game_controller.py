@@ -8,7 +8,7 @@ import pickle
 import pygame
 import random
 
-DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
+DEFAULT_GAME = dict({'player_id': '0', 'turn_status': 'get'})
 server_update = dict({})
 
 class Game_controller:
@@ -21,10 +21,12 @@ class Game_controller:
         
         self.network = Client_message_handler()
         self.id = int(self.network.get_id())
+        self.player_id = str(self.id)
         self.playing = True
-        player_caption = "Clue-Less Player " + str(self.id)
+        player_caption = "Clue-Less Player " + self.player_id
         pygame.display.set_caption(player_caption)
-        self.prev_game_state = DEFAULT_GAME
+        self.game_state = DEFAULT_GAME
+        self.player_token = 'None'
         self.state = "START"
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.base_color = self.randomise_color()
@@ -43,12 +45,16 @@ class Game_controller:
 
             try:
                 #game_update = self.network.get_server_update()
-                game_data = self.network.build_package("get", "")
-                #print(game_data)
+                self.game_state['player_id'] = self.player_id
+                self.game_state['player_token'] = self.player_token
+                self.game_state['turn_status'] = "get"
+
+                game_data = self.network.build_client_package(self.player_id, "get", '')
+
                 game = self.network.send_receive(game_data)
-                #print(game)
-                self.prev_game_state = self.network.process_server_update(game, self.prev_game_state)
-                #print(self.prev_game_state)
+                #print("received server message")
+                prev_game_state = self.network.process_server_update(game, prev_game_state)
+                #print(prev_game_state)
 
             except:
                 run = False
@@ -95,21 +101,21 @@ class Game_controller:
         if is_Room_Selection_Active:
             self.state = "CHOOSING_ROOM"
             board.load_options(self.screen, self.state, events)
-            turn_data = self.network.build_package(self.state, str(mousePos))
-            #print(turn_data)
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            print(turn_data)
             self.network.send(turn_data)
 
         if is_Accuse_Selection_Active:
             self.state = "ACCUSING"
             board.load_options(self.screen, self.state, events)
-            turn_data = self.network.build_package(self.state, str(mousePos))
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
             #print(turn_data)
             self.network.send(turn_data)
 
         if is_Suggest_Selection_Active:
             self.state = "SUGGESTING"
             board.load_options(self.screen, self.state, events)
-            turn_data = self.network.build_package(self.state, str(mousePos))
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
             #print(turn_data)
             self.network.send(turn_data)
 

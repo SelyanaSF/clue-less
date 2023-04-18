@@ -51,7 +51,8 @@ class Server:
                     if client_message != prev_client_message:
                         player_turn = Game_message_handler.process_client_update(client_message)
 
-                        if player_turn['turn_status'] != SKIP:
+                        if player_turn['turn_status'] != "get":
+                            print(player_turn)
                             game_status = Game_processor.player_take_turn(player_turn)
                             #print(game_status)
 

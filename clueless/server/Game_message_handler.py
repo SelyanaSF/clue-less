@@ -12,24 +12,46 @@ class Game_message_handler:
         client_update = pickle.loads(conn.recv(4096))
         return client_update
 
-    def process_client_update(player_data):
+    def process_client_update(client_message):
         #print("processing client message")
-        player_turn = {}
-        player_status = player_data['header']
-        player_id = player_data['player_id']
+        #print(client_message)
+        turn_status = client_message['turn_status']
+        player_turn = {'player_id': client_message['player_id'], 'turn_status': turn_status}
 
-        if player_status == "reset":
+        if turn_status == "reset":
             pass        
-        elif player_status == "get":
-            player_turn['player_token'] = player_id
-            player_turn['turn_status'] = 'skip'
-        else:
-            player_turn['player_token'] = player_id
-            player_turn['turn_status'] = player_status
+        elif turn_status != "get":
+            if turn_status == 'CHOOSING_ROOM':
+                player_turn.update('turn_status', 'movement')
+                player_turn.update('target_tile', client_message['target_tile'])
+            elif turn_status == 'SUGGESTING':
+                player_turn.update('turn_status', 'suggestion')
+                player_turn.update('suggested_cards', client_message['suggested_cards'])
+            elif turn_status == 'ACCUSING':
+                player_turn.update('turn_status', 'accusation')
+                player_turn.update('accused_cards', client_message['accused_cards'])
 
         #print(player_turn)
         return player_turn
 
 
     def build_game_package(game_status):
-        pass
+        game_package = {
+            'player_token': game_status['player_token'],
+            'turn_status': game_status['turn_status'],
+        }
+
+        turn_status = game_package['turn_status']
+
+        #based on game status, build a package for the game status message
+        if turn_status != "get":
+            if turn_status == 'movement':
+                game_package.update('player_location', game_status['target_tile'])
+            elif turn_status == 'suggestion':
+                game_package.update('suggested_cards', game_status['suggested_cards'])
+                game_package.update('suggest_result', game_status['suggest_result'])
+                game_package.update('suggest_result_player', game_status['suggest_result_player'])
+                game_package.update('suggested_player_location', game_status['suggested_cards']['room'])
+            elif turn_status == 'accusation':
+                game_package.update('accused_cards', game_status['accused_cards'])
+                game_package.update('accuse_result', game_status['accuse_result'])
