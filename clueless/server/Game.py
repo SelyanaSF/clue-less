@@ -1,16 +1,16 @@
-from Tile import * 
-from Player import *
-from Game_processor import *
-from Deck import Deck
-from Player import Player
+from clueless.server.Tile import * 
+from clueless.server.Player import *
+from clueless.server.Game_processor import *
+from clueless.server.Deck import Deck
+from clueless.server.Player import Player
 
 class Game:
 
     def __init__(self, players, num_players):
         self.num_players = num_players
         self.players = players                              # list of all players
-        self.game_deck = Deck.get_deck()                    # dict for initial overall game deck
-        self.case_file = Deck.get_secret_deck()             # dict of three secret cards
+        self.game_deck = Deck()                    # dict for initial overall game deck
+        self.case_file = self.game_deck.get_secret_deck()             # dict of three secret cards
         # self.turn_state = None                              # turn state for current player
         self.game_status = None                             # game state of entire game
 
@@ -111,7 +111,7 @@ class Game:
     # A method that deals a deck of cards to players 
     def deal_to_players(self)->dict:
         num_players= len(self.players)
-        dealt_decks = Deck.deal(num_players)
+        dealt_decks = self.game_deck.deal(num_players)
         for i, player in enumerate(self.players):
             Player.set_player_hand(dealt_decks[i])
 

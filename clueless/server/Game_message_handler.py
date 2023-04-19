@@ -6,6 +6,7 @@ class Game_message_handler:
         pass
 
     def send_game_update(conn, game_update):
+        #print("sending to client")
         conn.send(pickle.dumps(game_update))
 
     def receive_client_update(conn):
@@ -16,43 +17,48 @@ class Game_message_handler:
         #print("processing client message")
         #print(client_message)
         turn_status = client_message['turn_status']
-        player_turn = {'player_id': client_message['player_id'], 'turn_status': turn_status}
+        #starting with client turn status form bc og the get condition
+        player_turn = dict({'player_id': client_message['player_id'], 'turn_status': turn_status})
 
         if turn_status == "reset":
             pass        
         elif turn_status != "get":
-            if turn_status == 'CHOOSING_ROOM':
-                player_turn.update('turn_status', 'movement')
-                player_turn.update('target_tile', client_message['target_tile'])
-            elif turn_status == 'SUGGESTING':
-                player_turn.update('turn_status', 'suggestion')
-                player_turn.update('suggested_cards', client_message['suggested_cards'])
-            elif turn_status == 'ACCUSING':
-                player_turn.update('turn_status', 'accusation')
-                player_turn.update('accused_cards', client_message['accused_cards'])
+            if turn_status == 'MOVEMENT':
+                player_turn.update({'turn_status': 'movement'})
+                player_turn.update({'target_tile': client_message['target_tile']})
+            elif turn_status == 'SUGGESTION':
+                player_turn.update({'turn_status': 'suggestion'})
+                player_turn.update({'suggested_cards': client_message['suggested_cards']})
+            elif turn_status == 'ACCUSATION':
+                player_turn.update({'turn_status': 'accusation'})
+                player_turn.update({'accused_cards': client_message['accused_cards']})
 
-        #print(player_turn)
+        print(player_turn)
         return player_turn
 
 
     def build_game_package(game_status):
-        game_package = {
+        #print("building message package for client")
+        game_package = dict({
             'player_id': game_status['player_id'],
-            'player_token': game_status['player_token'],
+            #'player_token': game_status['player_token'],
             'turn_status': game_status['turn_status']
-        }
+        })
 
         turn_status = game_package['turn_status']
 
         #based on game status, build a package for the game status message
         if turn_status != "get":
             if turn_status == 'movement':
-                game_package.update('player_location', game_status['target_tile'])
+                game_package.update({'player_location': game_status['target_tile']})
             elif turn_status == 'suggestion':
-                game_package.update('suggested_cards', game_status['suggested_cards'])
-                game_package.update('suggest_result', game_status['suggest_result'])
-                game_package.update('suggest_result_player', game_status['suggest_result_player'])
-                game_package.update('suggested_player_location', game_status['suggested_cards']['room'])
+                game_package.update({'suggested_cards': game_status['suggested_cards']})
+                game_package.update({'suggest_result': game_status['suggest_result']})
+                game_package.update({'suggest_result_player': game_status['suggest_result_player']})
+                game_package.update({'suggested_player_location': game_status['suggested_cards']['room']})
             elif turn_status == 'accusation':
-                game_package.update('accused_cards', game_status['accused_cards'])
-                game_package.update('accuse_result', game_status['accuse_result'])
+                game_package.update({'accused_cards': game_status['accused_cards']})
+                game_package.update({'accuse_result': game_status['accuse_result']})
+
+        #print(game_package)
+        return game_package

@@ -5,7 +5,7 @@ import pickle
 import sys
 from clueless.server.Game import Game
 from clueless.server.Game_message_handler import Game_message_handler
-from clueless.server.Game_processor import Game_processor
+from clueless.server.Game_processor import *
 
 HOST_ADDR = socket.gethostbyname(socket.gethostname())
 HOST_PORT = 8080
@@ -20,7 +20,9 @@ class Server:
     def __init__(self):
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.id_count = 0
-        self.game = Game()
+        self.max_players = PLAYER_MAX
+        #hardcoding as a placeholder
+        self.game = Game([],3)
 
         try:
             self.server.bind((HOST_ADDR, HOST_PORT))
@@ -50,9 +52,10 @@ class Server:
                 else:
                     if client_message != prev_client_message:
                         player_turn = Game_message_handler.process_client_update(client_message)
+                        #print("processed client message")
 
                         if player_turn['turn_status'] != "get":
-                            print(player_turn)
+                            #print(player_turn)
                             game_status = Game_processor.player_take_turn(player_turn)
                             #print(game_status)
 
@@ -85,12 +88,13 @@ class Server:
 
         #Enter the number of players and their names
 
-        # num_players= int(input("Enter the number of players: "))
+        num_players= int(input("Enter the number of players: "))
         
-        # while (num_players < 3 or num_players > 6):
-        #     print("A total number of 3-6 players are allowed to participate in this game.")
-        #     num_players= int(input("Enter the number of players: "))
+        while (num_players < 3 or num_players > 6):
+            print("A total number of 3-6 players are allowed to participate in this game.")
+            num_players= int(input("Enter the number of players: "))
 
+        self.max_players = num_players
 
         while True:
             self.id_count = id_count

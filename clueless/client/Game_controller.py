@@ -57,6 +57,11 @@ class Game_controller:
 
         prev_game_state = DEFAULT_GAME
         print("You are Player ", self.id)
+        self.game_state['player_id'] = self.player_id
+        self.game_state['player_token'] = self.player_token
+        self.game_state['turn_status'] = "get"
+
+        game_data = self.network.build_client_package(self.player_id, "get", '')
 
         while self.playing:
             self.tick()
@@ -64,14 +69,15 @@ class Game_controller:
 
             try:
                 #game_update = self.network.get_server_update()
-                self.game_state['player_id'] = self.player_id
-                self.game_state['player_token'] = self.player_token
-                self.game_state['turn_status'] = "get"
 
-                game_data = self.network.build_client_package(self.player_id, "get", '')
-
+                
                 game = self.network.send_receive(game_data)
-                #print("received server message")
+                # self.network.send(game_data)
+                # print("sent client message")
+
+                # game = self.network.receive()
+                # print("received server message")
+
                 prev_game_state = self.network.process_server_update(game, prev_game_state)
                 #print(prev_game_state)
 
@@ -81,7 +87,7 @@ class Game_controller:
                 break
 
             events = pygame.event.get()
-            self.check_events(events)
+            game_data = self.check_events(events)
             
         # when pygame.QUIT event happens, change self.playing to False 
         # the while loop will end and quit the game
@@ -93,6 +99,7 @@ class Game_controller:
     ################################################################################
     def check_events(self, events) :
         mousePos = pygame.mouse.get_pos()
+        turn_data = DEFAULT_GAME
         for event in events:
             if event.type == pygame.QUIT:
                 self.playing = False
@@ -101,11 +108,11 @@ class Game_controller:
                 self.message_for_server = {}
                 self.room_choice = None
                 self.screen.fill(self.base_color)
-                self.add_main_view(events)
+                turn_data = self.add_main_view(events)
 
             # This is to highlight rectangle when choosing the room and print the choosen one on the options box
             if (self.state == 'MOVEMENT'):
-                self.add_main_view(events)
+                turn_data = self.add_main_view(events)
                 self.board.highlight_tile_rect(self.screen,(0,100,0),'All')
                 for key in self.tiles_directory:
                     if (self.tiles_directory[key][0].collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
@@ -194,6 +201,8 @@ class Game_controller:
                             self.accuse_room_dict[key][3] = True
                             self.message_for_server['room'] = key
 
+        return turn_data
+
     ################################################################################
     # add_main_view is the function to show main view
     # Input : events [type: Pygame Event]
@@ -205,6 +214,7 @@ class Game_controller:
         # Add board
         self.board.load_tiles(self.screen, self.board)
         self.tiles_directory = self.board.get_tiles_directory()
+        turn_data = DEFAULT_GAME
 
         # Initialize Buttons
         button_Y_Pos = 75
@@ -239,6 +249,8 @@ class Game_controller:
 
         # if player chooose end turn, then it passes the turn to others.
 
+        return turn_data
+
     ################################################################################
     # add_suggest_view is the function to show suggest view
     # Input : events [type: Pygame Event]
@@ -272,8 +284,8 @@ class Game_controller:
             print(self.message_for_server)
 
             turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
-        #print(turn_data)
-        self.network.send(turn_data)
+            #print(turn_data)
+            self.network.send(turn_data)
 
     ################################################################################
     # add_accuse_view is the function to show accuse view
@@ -307,9 +319,10 @@ class Game_controller:
             print('Sending message to server for accusation: ')
             print(self.message_for_server)
         
-        turn_data = self.network.build_package(self.state, str(mousePos))
-        #print(turn_data)
-        self.network.send(turn_data)
+            turn_data = self.network.build_package(self.player_id, self.state, str(mousePos))
+            #print(turn_data)
+            self.network.send(turn_data)
+            
     def render(self):
         pygame.display.flip()
     
