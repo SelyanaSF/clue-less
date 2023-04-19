@@ -19,13 +19,17 @@ class Game_processor:
         self.player_cards = {player: [] for player in players}
         self.game_over = False
 
-     # This method deals out the cards in the deck to each player. It does not
-     # return anything, but it modifies the player_cards and deck attributes 
-     # of the ClueGame object.   
-    def deal_cards(self):
-        for i, card in enumerate(self.deck):
-            self.player_cards[self.players[i % len(self.players)]].append(card)
-        self.deck = []
+    def __init__(self) -> None:
+        pass
+
+
+#      # This method deals out the cards in the deck to each player. It does not
+#      # return anything, but it modifies the player_cards and deck attributes 
+#      # of the ClueGame object.   
+#     def deal_cards(self):
+#         for i, card in enumerate(self.deck):
+#             self.player_cards[self.players[i % len(self.players)]].append(card)
+#         self.deck = []
 
     
 
@@ -205,26 +209,26 @@ def validate_move(board_dict, player, destination):
     #         valid_moves.append(self.player_positions[player])
     #     return valid_moves
 
-    # This method records a suggestion made by a player. It does not return 
-    # anything, but it modifies the suggestions attribute of the ClueGame object.    
-    def suggestions(self, player, weapon, room, accused_player):
-        suggestion = {'player': player, 'weapon': weapon, 'room': room, 'accused_player': accused_player}
-        self.suggestions.append(suggestion)
+#     # This method records a suggestion made by a player. It does not return 
+#     # anything, but it modifies the suggestions attribute of the ClueGame object.    
+#     def suggestion(self, player, weapon, room, accused_player):
+#         suggestion = {'player': player, 'weapon': weapon, 'room': room, 'accused_player': accused_player}
+#         self.suggestions.append(suggestion)
 
-    # This method checks if a suggestion is valid. It returns a Boolean value 
-    # indicating whether or not the suggestion is valid.    
-    def validate_suggestion(self, suggestion):
-        if suggestion['player'] not in self.players or suggestion['weapon'] not in self.weapons or suggestion['room'] not in self.rooms or suggestion['accused_player'] not in self.players:
-            return False
-        return True
+#     # This method checks if a suggestion is valid. It returns a Boolean value 
+#     # indicating whether or not the suggestion is valid.    
+#     def validate_suggestion(self, suggestion):
+#         if suggestion['player'] not in self.players or suggestion['weapon'] not in self.weapons or suggestion['room'] not in self.rooms or suggestion['accused_player'] not in self.players:
+#             return False
+#         return True
     
-    # This method returns the list of suggestions made by a specific player.
-    def get_suggestions_for_player(self, player):
-        player_suggestions = []
-        for suggestion in self.suggestions:
-            if suggestion['player'] == player:
-                player_suggestions.append(suggestion)
-        return player_suggestions
+#     # This method returns the list of suggestions made by a specific player.
+#     def get_suggestions_for_player(self, player):
+#         player_suggestions = []
+#         for suggestion in self.suggestions:
+#             if suggestion['player'] == player:
+#                 player_suggestions.append(suggestion)
+#         return player_suggestions
     
     # This method records an accusation made by a player. It does not return
     # anything, but it modifies the accusations attribute of the ClueGame object. 
@@ -268,26 +272,23 @@ def validate_move(board_dict, player, destination):
             elif guess in self.ROOMS: has_room = True
         return has_weapon and has_token and has_room
     
-    # This method returns the list of accusations made by a specific player.
-    def get_accusations_for_player(self, player):
-        player_accusations = []
-        for accusation in self.accusations:
-            if accusation['player'] == player:
-                player_accusations.append(accusation)
-        return player_accusations
+#     # This method returns the list of accusations made by a specific player.
+#     def get_accusations_for_player(self, player):
+#         player_accusations = []
+#         for accusation in self.accusations:
+#             if accusation['player'] == player:
+#                 player_accusations.append(accusation)
+#         return player_accusations
 
-    # This method returns the list of cards held by a specific player.   
-    def get_player_cards(self, player):
-        return self.player_cards[player]
+#     # This method returns the list of cards held by a specific player.   
+#     def get_player_cards(self, player):
+#         return self.player_cards[player]
 
-
-
-
-# create a new game
-# game = GameLogic()
+# # create a new game
+# game = Game_processor()
 
 # # make a suggestion by player 1
-# game.suggestions("player1", "wrench", "study", "player2")
+# game.suggestion("player1", "wrench", "study", "player2")
 
 # # validate the suggestion
 # is_valid = game.validate_suggestion(("player1", "wrench", "study", "player2"))
@@ -295,3 +296,14 @@ def validate_move(board_dict, player, destination):
 #     print("Valid suggestion!")
 # else:
 #     print("Invalid suggestion.")
+
+    # This method determines what turn the player is taking and then routes to 
+    # appropriate game logic functions to carry out turn accordingly
+    def player_take_turn(player_turn):
+        print("Player taking turn: Player ", player_turn['player_id'])
+
+        if player_turn['player_status'] == "movement":
+            print("Player chooses to move to location ", player_turn['player_location'])
+            print()
+
+        return player_turn

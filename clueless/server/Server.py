@@ -3,96 +3,109 @@ import socket
 import threading
 import pickle
 import sys
+from clueless.server.Game import Game
+from clueless.server.Game_message_handler import Game_message_handler
+from clueless.server.Game_processor import Game_processor
 
 HOST_ADDR = socket.gethostbyname(socket.gethostname())
 HOST_PORT = 8080
-DEFAULT_TURN = dict({'header': 'none', 'player_id': '0', 'data': ''})
-DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
+DEFAULT_TURN = dict({'header': 'None', 'player_id': 'None', 'data': ''})
+DEFAULT_GAME = dict({'player_count': 0, 'player_token': '0', 'turn_status': ''})
 PLAYER_MAX = 6
 PLAYER_MIN = 3
+SKIP = 'skip'
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+class Server:
 
-try:
-    server.bind((HOST_ADDR, HOST_PORT))
-except socket.error as err:
-        str(err)
+    def __init__(self):
+        self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.id_count = 0
+        self.game = Game()
 
-
-def threaded_client(conn, player_id, game):
-    conn.send(pickle.dumps(player_id))
-    reply = ""
-    prev_player_turn = DEFAULT_TURN
-
-    connected = True
-
-    while connected:
         try:
-            #print("Server receiving player data")
-            player_data = pickle.loads(conn.recv(4096))
-            #print(player_data)
-            #print("Server received player data")
+            self.server.bind((HOST_ADDR, HOST_PORT))
+        except socket.error as err:
+            str(err)
 
-            if not player_data:
-                print("Disconnected")
-                connected = False
+        print("Waiting for a connection, server started")
+        self.start()
+
+    def threaded_client(self, conn, player_id, game):
+        conn.send(pickle.dumps(player_id))
+        reply = ""
+        prev_client_message = DEFAULT_TURN
+        server_update = game
+        connected = True
+
+        while connected:
+            try:
+                #print("Server receiving player data")
+                client_message = Game_message_handler.receive_client_update(conn)
+                #print("Server received player data")
+    
+                if not client_message:
+                    print("Disconnected")
+                    connected = False
+                    break
+                else:
+                    if client_message != prev_client_message:
+                        player_turn = Game_message_handler.process_client_update(client_message)
+
+                        if player_turn['turn_status'] != "get":
+                            print(player_turn)
+                            game_status = Game_processor.player_take_turn(player_turn)
+                            #print(game_status)
+
+                            server_update = Game_message_handler.build_game_package(game_status)
+                        else:
+                            server_update = player_turn
+
+                        prev_client_message = client_message
+
+                #print(server_update)
+                Game_message_handler.send_game_update(conn, server_update)
+                #print("sent to client")
+            except:
                 break
-            else:
-                if player_data != prev_player_turn:
-                    player_status = player_data['header']
-                    player_id = player_data['player_id']
-                    #print(status)
 
-                    if player_status == "reset":
-                        pass
-                    elif player_status != "get":
-                        player_details = player_data['data']
-
-                        game['player_turn_id'] = player_id
-                        game['player_turn_type'] = player_status
-                        game['player_turn_details'] = player_details
-
-                        if player_status == "CHOOSING":
-                                print("Player taking turn: Player ", player_id)
-                                print("Player chooses to move to location ", player_details)
-                                print()
-                        
-                        prev_player_turn = player_data
-
-                conn.send(pickle.dumps(game))
+        print("Lost connection")
+        try:
+            print("Closing Game")
         except:
-            break
+            pass
 
-    print("Lost connection")
-    try:
-        print("Closing Game")
-    except:
-        pass
+        conn.close()
 
-    conn.close()
+        sys.exit("Server Closed")
 
-    sys.exit("Server Closed")
+    def start(self):
+        id_count = self.id_count
+        game_status = DEFAULT_GAME
+        self.server.listen(2)
 
-def start():
-    id_count = 0
-    game = DEFAULT_GAME
-    server.listen(2)
+        #Enter the number of players and their names
 
-    while True:
-    #this loops runs forever, so any print statements outside of 
-    # the if statemennt will print forever
+        # num_players= int(input("Enter the number of players: "))
+        
+        # while (num_players < 3 or num_players > 6):
+        #     print("A total number of 3-6 players are allowed to participate in this game.")
+        #     num_players= int(input("Enter the number of players: "))
 
-        if (id_count < PLAYER_MAX):
-            conn, addr = server.accept()
-            print("Connected to:", addr)
-            
-            game['player_count'] = id_count+1
 
-            thread = threading.Thread(target=threaded_client, args=(conn, id_count+1, game))
-            thread.start()
-            id_count = threading.active_count()-1
-            print("Active Players: ", threading.active_count()-1)
-            print()
+        while True:
+            self.id_count = id_count
+        #this loops runs forever, so any print statements outside of 
+        # the if statement will print forever
 
-print("Waiting for a connection, server started")
-start()
+            if (id_count < PLAYER_MAX):
+                conn, addr = self.server.accept()
+                print("Connected to:", addr)
+                
+                game_status['player_count'] = id_count+1
+
+                thread = threading.Thread(target=self.threaded_client, args=(conn, id_count+1, game_status))
+                thread.start()
+                id_count = threading.active_count()-1
+                print("Active Players: ", threading.active_count()-1)
+                print()
+

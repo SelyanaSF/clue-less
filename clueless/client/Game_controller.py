@@ -8,7 +8,8 @@ import pickle
 import pygame
 import random
 
-DEFAULT_GAME = dict({'player_count': 0, 'player_turn_id': '0', 'player_turn_type': '', 'player_turn_details': ''})
+DEFAULT_GAME = dict({'player_id': '0', 'turn_status': 'get'})
+server_update = dict({})
 
 class Game_controller:
 
@@ -33,7 +34,12 @@ class Game_controller:
         
         self.network = Client_message_handler()
         self.id = int(self.network.get_id())
+        self.player_id = str(self.id)
         self.playing = True
+        player_caption = "Clue-Less Player " + self.player_id
+        pygame.display.set_caption(player_caption)
+        self.game_state = DEFAULT_GAME
+        self.player_token = 'None'
         self.state = "START"
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.base_color = self.randomise_color()
@@ -57,27 +63,17 @@ class Game_controller:
             self.render()
 
             try:
-                game_data = self.network.build_package("get", "")
-                #print(game_data)
+                #game_update = self.network.get_server_update()
+                self.game_state['player_id'] = self.player_id
+                self.game_state['player_token'] = self.player_token
+                self.game_state['turn_status'] = "get"
+
+                game_data = self.network.build_client_package(self.player_id, "get", '')
+
                 game = self.network.send_receive(game_data)
-
-                #receive updates
-                if game != prev_game_state:
-                    #print(game)
-                    game_player_id = game['player_turn_id']
-                    game_player_status = game['player_turn_type']
-                    game_player_turn = game['player_turn_details']
-
-                    if game_player_status == 'MOVEMENT':
-                        print("Player taking turn: Player ", game_player_id)
-                        print("Player chooses to move to location ", game_player_turn)
-                        print()
-                    # if game_player_status == 'SUGGESTION':
-                    #     print()
-                    # if game_player_status == 'ACCUSATION':
-                    #     print()
-
-                    prev_game_state = game
+                #print("received server message")
+                prev_game_state = self.network.process_server_update(game, prev_game_state)
+                #print(prev_game_state)
 
             except:
                 run = False
@@ -227,12 +223,17 @@ class Game_controller:
         if is_Room_Selection_Active:
             self.state = "MOVEMENT"
             self.board.load_options(self.screen, self.state, events)
-            turn_data = self.network.build_package(self.state, str(mousePos))
-            #print(turn_data)
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            print(turn_data)
             self.network.send(turn_data)
 
         if is_Accuse_Selection_Active:
             self.state = "ACCUSATION"
+            self.board.load_options(self.screen, self.state, events)
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            #print(turn_data)
+            self.network.send(turn_data)
+
         if is_Suggest_Selection_Active:
             self.state = "SUGGESTION"
 
@@ -270,7 +271,7 @@ class Game_controller:
             print('Sending message to server for suggestion: ')
             print(self.message_for_server)
 
-        turn_data = self.network.build_package(self.state, str(mousePos))
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
         #print(turn_data)
         self.network.send(turn_data)
 
@@ -337,7 +338,7 @@ class Game_controller:
 # Instantiate Deck class
 # Remove docstring to execute 
 
-#Enter the number of players and their names
+# players= []
 
 # num_players= int(input("Enter the number of players: "))
 
