@@ -12,12 +12,6 @@ class Game:
         # Find out where Game is initialized, loop through players and map their name to id
         # self.player_name_to_connectionid_dict = 
 
-    def __init__(self) -> None:
-        pass
-
-    def __init__(self) -> None:
-        pass
-
     def get_turn_status():
         pass
 

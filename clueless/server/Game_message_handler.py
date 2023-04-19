@@ -37,8 +37,9 @@ class Game_message_handler:
 
     def build_game_package(game_status):
         game_package = {
+            'player_id': game_status['player_id'],
             'player_token': game_status['player_token'],
-            'turn_status': game_status['turn_status'],
+            'turn_status': game_status['turn_status']
         }
 
         turn_status = game_package['turn_status']
