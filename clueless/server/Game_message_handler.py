@@ -14,7 +14,7 @@ class Game_message_handler:
         return client_update
 
     def process_client_update(client_message):
-        #print("processing client message")
+        print("...processing client message")
         #print(client_message)
         turn_status = client_message['turn_status']
         #starting with client turn status form bc og the get condition
@@ -33,12 +33,12 @@ class Game_message_handler:
                 player_turn.update({'turn_status': 'accusation'})
                 player_turn.update({'accused_cards': client_message['accused_cards']})
 
-        print(player_turn)
+        print(f'...processed player_turn {player_turn}')
         return player_turn
 
 
     def build_game_package(game_status):
-        #print("building message package for client")
+        print("...building message package for client")
         game_package = dict({
             'player_id': game_status['player_id'],
             #'player_token': game_status['player_token'],
@@ -58,7 +58,8 @@ class Game_message_handler:
                 game_package.update({'suggested_player_location': game_status['suggested_cards']['room']})
             elif turn_status == 'accusation':
                 game_package.update({'accused_cards': game_status['accused_cards']})
-                game_package.update({'accuse_result': game_status['accuse_result']})
+                if 'accuse_result' in game_package:
+                    game_package.update({'accuse_result': game_status['accuse_result']})
 
         #print(game_package)
         return game_package

@@ -2,6 +2,7 @@
 import socket
 import pickle
 import threading
+import sys
 
 HOST_ADDR = socket.gethostbyname(socket.gethostname())
 HOST_PORT = 8080
@@ -28,28 +29,37 @@ class Client_message_handler:
         #print("Player sending information to the Server")
         #print(data)
         try:
+            print('...sending client -> server data')
             self.client.send(pickle.dumps(data))
+            
+            print('...receiving server -> client data')
             return pickle.loads(self.client.recv(4096))
         except socket.error as err:
             print(err)
 
     def send(self, data):
-        #print("Player sending information to the Server")
-        try:
-            self.client.send(pickle.dumps(data))
-        except socket.error as err:
-            print(err)
+        #print("Player sending information to the Server") 
+        if data:
+            dic1 = pickle.dumps(data)
+            try:
+                self.client.send(dic1)
+            except socket.error as err:
+                print(err)
 
     def receive(self):
         #print("Player receiving information from the Server")
-        try:
-            return pickle.loads(self.client.recv(4096))
-        except socket.error as err:
-            print(err)
+        rec = self.client.recv(4096)
+        dic1 = pickle.loads(rec)
+        if dic1:
+            try:
+                return dic1
+            except socket.error as err:
+                print(err)
 
     def build_client_package(self, player_id, state, contents):
         #start builing message package to send to server
-        #print("building client package")
+        print("...building client package")
+        print(f'   for player {player_id}, {state}, {contents}')
         client_package = dict({'player_id': player_id, 'turn_status': state})
 
         if (state == 'MOVEMENT'):
@@ -67,7 +77,7 @@ class Client_message_handler:
         return game
 
     def process_server_update(self, server_message, prev_server_message):
-        #print("processing server message")
+        print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
         if server_message != prev_server_message:
             player_id = server_message['player_id']
             #player_token = server_message['player_token']
@@ -79,6 +89,7 @@ class Client_message_handler:
                 if turn_status == 'movement':
                     print("Player " + player_id + " chooses to move to location ", server_message['player_location'])
                     print()
+                                
                 elif turn_status == 'suggestion':
                     print("Player " + player_id + " suggested " + server_message['suggested_cards']['character'] + " with the " + 
                           server_message['suggested_cards']['weapon'] + " in the " + server_message['suggested_cards']['room'])

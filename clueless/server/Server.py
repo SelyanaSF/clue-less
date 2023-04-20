@@ -22,7 +22,9 @@ class Server:
         self.id_count = 0
         self.max_players = PLAYER_MAX
         #hardcoding as a placeholder
-        self.game = Game([],3)
+        player_info_dict = {1:'Colonal Mustard',
+                             2:'Miss Scarlet'}
+        self.game = Game(player_info_dict)
 
         try:
             self.server.bind((HOST_ADDR, HOST_PORT))
@@ -54,11 +56,11 @@ class Server:
                         player_turn = Game_message_handler.process_client_update(client_message)
                         #print("processed client message")
 
-                        if player_turn['turn_status'] != "get":
+                        if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "MOVING" and player_turn['turn_status'] != "ACCUSING":
                             #print(player_turn)
-                            game_status = Game_processor.player_take_turn(player_turn)
+                            # game_status = Game_processor.player_take_turn(player_turn)
+                            game_status = self.game.player_take_turn(player_turn)
                             #print(game_status)
-
                             server_update = Game_message_handler.build_game_package(game_status)
                         else:
                             server_update = player_turn
@@ -87,7 +89,6 @@ class Server:
         self.server.listen(2)
 
         #Enter the number of players and their names
-
         num_players= int(input("Enter the number of players: "))
         
         while (num_players < 3 or num_players > 6):
@@ -95,7 +96,7 @@ class Server:
             num_players= int(input("Enter the number of players: "))
 
         self.max_players = num_players
-
+                
         while True:
             self.id_count = id_count
         #this loops runs forever, so any print statements outside of 
