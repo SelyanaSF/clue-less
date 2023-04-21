@@ -323,7 +323,7 @@ class Client_game_board:
     def load_options(self, screen, state, events):
 
         room_options = Options_Box.Options_Box()
-        if (state == "MOVEMENT"):
+        if (state == "MOVING"):
             return room_options.draw_room_options(screen)
         if (state == "SUGGESTION"):
             return room_options.draw_suggest_options(screen)
@@ -361,3 +361,8 @@ class Client_game_board:
             pygame.draw.rect(screen,color,self.suspect_dict[key_name][0],2)
         if (card_type == 'room'):
             pygame.draw.rect(screen,color,self.room_dict[key_name][0],2)
+
+    def display_update(self, screen, text):
+        my_font = pygame.font.SysFont(None, 30)
+        text_surface = my_font.render(text, False, (0, 0, 0))
+        screen.blit(text_surface, (100,100))

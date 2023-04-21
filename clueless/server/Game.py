@@ -6,22 +6,25 @@ from clueless.server.Player import Player
 
 class Game:
 
-    def __init__(self, player_info_dict): # players, num_players):
-        print('GAME INITIALIZED')
+    def __init__(self, player_info_dict):
+        # print('GAME INITIALIZED')
         self.num_players = len(player_info_dict)
         self.players = []
 
         for player_id, player_name in player_info_dict.items():
             this_player = Player(player_name, player_id)
             self.players.append(this_player)
-        self.game_deck = Deck()                    # dict for initial overall game deck
-        self.case_file = self.game_deck.get_secret_deck()             # dict of three secret cards
-        # self.turn_state = None                              # turn state for current player
-        self.game_status = None                             # game state of entire game
+        self.game_deck = Deck()                                 # dict for initial overall game deck
+        self.case_file = self.game_deck.get_secret_deck()       # dict of three secret cards
+        
+        # Below needs ALL player objects initialized
+        self.deal_to_players()
+        # self.turn_state = None                                # turn state for current player
+        self.game_status = None                                 # game state of entire game
         print(f'  with case_file {self.case_file}')
         print('   with players')
         for p in self.players:
-            print(f'       {p.get_player_name()}, {p.get_player_id()}')
+            print(f'       {p.get_player_name()}, {p.get_player_id()}, {p.get_hand()}')
         
         ############################
         ##### INITIALIZE TILES #####
@@ -90,8 +93,6 @@ class Game:
             'Hallway 12' : tile_hallway_12
             }
         
-        # Find out where Game is initialized, loop through players and map their name to id
-        # self.player_name_to_connectionid_dict = 
 
     def get_turn_status(self):
         return self.get_turn_status
@@ -174,7 +175,7 @@ class Game:
 
     def get_player_object(self, player_id):
         for i, player in enumerate(self.players):
-            print(f'...comparing {player.get_player_id()} to {player_id}')
+            # print(f'...comparing {player.get_player_id()} to {player_id}')
             if player.get_player_id() == player_id:
                 return player
             
@@ -183,12 +184,12 @@ class Game:
         num_players= len(self.players)
         dealt_decks = self.game_deck.deal(num_players)
         for i, player in enumerate(self.players):
-            Player.set_player_hand(dealt_decks[i])
+            player.set_player_hand(dealt_decks[i])
 
     # This method determines what turn the player is taking and then routes to 
     # appropriate game logic functions to carry out turn accordingly
     def player_take_turn(self, player_turn):
-        print(" PLAYER TAKING TURN")
+        # print(" PLAYER TAKING TURN")
         '''
         INPUT: player_turn : dictionary from Game_message_handler.process_client_update(client_message)
             {'player_id': str,
@@ -212,7 +213,6 @@ class Game:
         # Get player object
         curr_player = self.get_player_object(int(player_turn['player_id']))
         
-        print(f'  with player_turn dict {player_turn} and curr_player obj {curr_player}')
         #  Game status stores the result of player taking a turn
         game_status = player_turn.copy()
         
@@ -220,36 +220,35 @@ class Game:
         if player_turn['turn_status'] == "movement":  
             backend_tilename = self.get_backend_tilename(player_turn['target_tile'])
             target_tile_obj = self.game_board[backend_tilename]
-            print(f"  Player {curr_player.get_player_name()} chooses to move to location {target_tile_obj.get_tile_name()}")
+            # print(f"  Player {curr_player.get_player_name()} chooses to move to location {target_tile_obj.get_tile_name()}")
             move_validated_boolean = Game_processor.validate_move(board_dict = self.game_board, player = curr_player, destination = target_tile_obj)
             if move_validated_boolean:
-                print('  move is valid')
+                # print('  move is valid')
                 move_result_boolean = Game_processor.move(board_dict = self.game_board, player = curr_player, destination = target_tile_obj)
             
         elif player_turn['turn_status'] == "accusation":
-# TO DO convert front to back end accused card names
             backend_playername = self.get_backend_playername(player_turn['accused_cards']['character'])
             backend_roomname = self.get_backend_tilename(player_turn['accused_cards']['room'])
             backend_weaponname = self.get_backend_weaponname(player_turn['accused_cards']['weapon'])
             
-            print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}")
+            # print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}")
             accuse_result = Game_processor.accuse(backend_playername, backend_weaponname, backend_roomname, self.case_file)
             if accuse_result:
-                print('    Player accused correctly')
+                # print('    Player accused correctly')
                 # Include name of current player if they accused correctly
                 game_status['accused_result_player'] = curr_player.get_player_name()
             else: 
                 curr_player.set_player_status('LOST')
-                print('    Player accused incorrectly')
+                # print('    Player accused incorrectly')
             
         elif player_turn['turn_status'] == "suggestion":
-            print('  Player chooses to suggest')
+            # print('  Player chooses to suggest')
             player_w_match, matched_card = Game_processor.suggest(curr_player.get_player_name(), player_turn['accused_cards']['weapon'], player_turn['accused_cards']['room'], player_turn['accused_cards']['character'])
             # TO DO: assumes output of suggest has name of player who suggested cards
             game_status['suggest_result_player'] = player_w_match
             game_status['suggested_match_card']= matched_card
         
-        print(f'... return game_status {game_status}')
+        # print(f'... return game_status {game_status}')
         game_status['ready']=True
         return game_status # --goes to--> server_update = Game_message_handler.build_game_package(game_status)
 

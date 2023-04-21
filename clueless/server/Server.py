@@ -23,7 +23,7 @@ class Server:
         self.max_players = PLAYER_MAX
         #hardcoding as a placeholder
         player_info_dict = {1:'Colonal Mustard',
-                             2:'Miss Scarlet'}
+                            2:'Miss Scarlet'}
         self.game = Game(player_info_dict)
 
         try:
@@ -68,8 +68,11 @@ class Server:
                         prev_client_message = client_message
 
                 #print(server_update)
+
+                
                 Game_message_handler.send_game_update(conn, server_update)
-                #print("sent to client")
+                # print("... sent server update to client")
+                # print()
             except:
                 break
 
