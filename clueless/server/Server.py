@@ -54,9 +54,10 @@ class Server:
                 else:
                     if client_message != prev_client_message:
                         player_turn = Game_message_handler.process_client_update(client_message)
-                        #print("processed client message")
-
-                        if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "MOVING" and player_turn['turn_status'] != "ACCUSING":
+                        print("processed client message")
+                        print(player_turn)
+                        
+                        if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "MOVING" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
                             #print(player_turn)
                             # game_status = Game_processor.player_take_turn(player_turn)
                             game_status = self.game.player_take_turn(player_turn)

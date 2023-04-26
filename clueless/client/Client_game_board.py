@@ -325,7 +325,7 @@ class Client_game_board:
         room_options = Options_Box.Options_Box()
         if (state == "MOVING"):
             return room_options.draw_room_options(screen)
-        if (state == "SUGGESTION"):
+        if (state == "SUGGESTING"):
             return room_options.draw_suggest_options(screen)
         else :
             print("No options box drawed")

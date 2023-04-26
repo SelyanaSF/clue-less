@@ -106,8 +106,9 @@ class Game_controller:
                         else: 
                             print("You win!")
                     # elif  # print move stuff here
-                except:
+                except Exception as err:
                     print("Couldn't process_server_update")
+                    print(err)
                     break
 
             except:
@@ -176,8 +177,8 @@ class Game_controller:
                     self.state = "START"
                     #is_Room_Selection_Active = False
 
-            if (self.state == 'SUGGESTION'):
-                self.add_suggest_view(events)
+            if (self.state == 'SUGGESTING'):
+                suggested_card_dict = self.add_suggest_view(events)
 
                 for key in self.suggest_weapon_dict:
                     if self.suggest_weapon_dict[key][3] == True:
@@ -189,6 +190,7 @@ class Game_controller:
                             # print('Player choose weapon: ' + key)
                             self.suggest_weapon_dict[key][3] = True
                             self.message_for_server['weapon'] = key
+                            self.weapon_choice = key
 
                 for key in self.suggest_suspect_dict:
                     if self.suggest_suspect_dict[key][3] == True:
@@ -200,6 +202,9 @@ class Game_controller:
                             # print('Player choose suspect: ' + key)
                             self.suggest_suspect_dict[key][3] = True
                             self.message_for_server['suspect'] = key
+                            self.character_choice = key
+
+                turn_data = self.network.build_client_package(self.player_id, self.state, suggested_card_dict)
 
             if (self.state == 'ACCUSING'): #'ACCUSATION'):
                 accused_card_dict = self.add_accuse_view(events)
@@ -291,7 +296,11 @@ class Game_controller:
             self.network.send(turn_data)
 
         if is_Suggest_Selection_Active:
-            self.state = "SUGGESTION"
+            self.state = "SUGGESTING"
+            self.board.load_options(self.screen, self.state, events)
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            #print(turn_data)
+            self.network.send(turn_data)
 
         # if player chooose end turn, then it passes the turn to others.
 
@@ -302,6 +311,7 @@ class Game_controller:
     # Input : events [type: Pygame Event]
     ################################################################################
     def add_suggest_view(self, events):
+        suggested_card_dict = {}
         mousePos = pygame.mouse.get_pos()
         pygame.display.set_caption("Suggest Player : ")
         self.screen.fill(self.base_color)
@@ -323,15 +333,21 @@ class Game_controller:
 
         if is_submit_button_active:
             self.reset_weapon_and_suspect_dict(self.state)
-            self.state = "START"
+            self.state = "SUGGESTION"
             self.screen.fill(self.base_color)
             # SEND MESSAGE TO SERVER
             print('Sending message to server for suggestion: ')
-            print(self.message_for_server)
+            suggested_card_dict = {'character':self.character_choice,
+                                    'weapon':self.weapon_choice}
+                                    #'room': None}
+            print("this is suggested card dict", suggested_card_dict)
+            # print(self.message_for_server)
 
-            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            # turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
             #print(turn_data)
-            self.network.send(turn_data)
+            # self.network.send(turn_data)
+
+        return suggested_card_dict
 
     ################################################################################
     # add_accuse_view is the function to show accuse view

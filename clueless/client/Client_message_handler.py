@@ -88,9 +88,13 @@ class Client_message_handler:
                             
             elif turn_status == 'suggestion':
                 print("Player " + player_id + " suggested " + server_message['suggested_cards']['character'] + " with the " + 
+                        # server_message['suggested_cards']['weapon'])
                         server_message['suggested_cards']['weapon'] + " in the " + server_message['suggested_cards']['room'])
                 #if the player client is the same as the player who made the suggestion, reveal the suggestion result
-                
+                if 'suggest_result_player' in server_message:
+                    print(server_message['suggest_result_player'], "has shown you:", server_message['suggested_match_card'])
+                else:
+                    print("No match found amongst other hands!")
             elif turn_status == 'accusation':
                 print(f"Player {player_id} accused {server_message['accused_cards']['character']} with the {server_message['accused_cards']['weapon']} in the {server_message['accused_cards']['room']}")
                 # if('accused_result_player' in server_message):

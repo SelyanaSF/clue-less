@@ -189,7 +189,7 @@ class Game:
     # This method determines what turn the player is taking and then routes to 
     # appropriate game logic functions to carry out turn accordingly
     def player_take_turn(self, player_turn):
-        # print(" PLAYER TAKING TURN")
+        print(" PLAYER TAKING TURN")
         '''
         INPUT: player_turn : dictionary from Game_message_handler.process_client_update(client_message)
             {'player_id': str,
@@ -222,16 +222,17 @@ class Game:
             target_tile_obj = self.game_board[backend_tilename]
             # print(f"  Player {curr_player.get_player_name()} chooses to move to location {target_tile_obj.get_tile_name()}")
             move_validated_boolean = Game_processor.validate_move(board_dict = self.game_board, player = curr_player, destination = target_tile_obj)
-            if move_validated_boolean:
-                # print('  move is valid')
-                move_result_boolean = Game_processor.move(board_dict = self.game_board, player = curr_player, destination = target_tile_obj)
+            #if move_validated_boolean:
+            #    # print('  move is valid')
+            #    move_result_boolean = Game_processor.move(board_dict = self.game_board, player = curr_player, destination = target_tile_obj)
+            # else:
             
         elif player_turn['turn_status'] == "accusation":
             backend_playername = self.get_backend_playername(player_turn['accused_cards']['character'])
             backend_roomname = self.get_backend_tilename(player_turn['accused_cards']['room'])
             backend_weaponname = self.get_backend_weaponname(player_turn['accused_cards']['weapon'])
             
-            # print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}")
+            print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}")
             accuse_result = Game_processor.accuse(backend_playername, backend_weaponname, backend_roomname, self.case_file)
             if accuse_result:
                 # print('    Player accused correctly')
@@ -242,11 +243,56 @@ class Game:
                 # print('    Player accused incorrectly')
             
         elif player_turn['turn_status'] == "suggestion":
-            # print('  Player chooses to suggest')
-            player_w_match, matched_card = Game_processor.suggest(curr_player.get_player_name(), player_turn['accused_cards']['weapon'], player_turn['accused_cards']['room'], player_turn['accused_cards']['character'])
+        
+            print("  Player chooses to suggest")
+            print(player_turn['suggested_cards'])
+
+
+            # convert string names with megan's dict
+            backend_playername = self.get_backend_playername(player_turn['suggested_cards']['character'])
+            # print(backend_playername)
+            backend_weaponname = self.get_backend_weaponname(player_turn['suggested_cards']['weapon'])
+            # print(backend_weaponname)
+            # print(curr_player)
+            # print(curr_player.get_player_current_location())
+            # {'character': 'mr_green', 'weapon': 'lead_pipe', 'room': None}
+            # get the suggesting player's location, UPDATE ROOM ENTRY IN DICT
+
+            Game_processor.move(self.game_board, curr_player, self.game_board.get('Billiard Room'))
+
+            # update suggested_cards and print
+            player_turn['suggested_cards']['room'] = curr_player.get_player_current_location().get_tile_name()
+            #print(player_turn['suggested_cards'])
+            #print("currplayer and location", curr_player.get_player_current_location())
+
+            suggest_dict = {'character': backend_playername,
+                            'weapon': backend_weaponname,
+                            'room': curr_player.get_player_current_location().get_tile_name()
+            }
+
+            # print("We made it!")
+            print(suggest_dict)
+
+            # update suggest inputs/outputs
+            # suggest input currently takes: (suggest_dict, players, board_dict)
+            # suggest will move players and decrement/increment tiles
+            Game_processor.suggest(suggest_dict, self.players, self.game_board)
+
+            # get the player's matched cards
+            player_w_match, matched_card = Game_processor.get_suggest_matches_for_player(curr_player, suggest_dict, self.players)
             # TO DO: assumes output of suggest has name of player who suggested cards
-            game_status['suggest_result_player'] = player_w_match
-            game_status['suggested_match_card']= matched_card
+            if player_w_match is not None:
+                game_status['suggest_result_player'] = player_w_match.get_player_name()
+            # print("matched_card is:", matched_card)
+            if matched_card is not None:
+                game_status['suggested_match_card']= matched_card
+            # else:
+            #     game_status['suggested_match_card']= str(matched_card)
+        # #     # print('  Player chooses to suggest')
+        #     player_w_match, matched_card = Game_processor.suggest(curr_player.get_player_name(), player_turn['accused_cards']['weapon'], player_turn['accused_cards']['room'], player_turn['accused_cards']['character'])
+        #     # TO DO: assumes output of suggest has name of player who suggested cards
+        #     game_status['suggest_result_player'] = player_w_match
+        #     game_status['suggested_match_card']= matched_card
         
         # print(f'... return game_status {game_status}')
         game_status['ready']=True

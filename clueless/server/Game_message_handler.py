@@ -56,9 +56,12 @@ class Game_message_handler:
                 game_package.update({'player_location': game_status['target_tile']})
             elif turn_status == 'suggestion':
                 game_package.update({'suggested_cards': game_status['suggested_cards']})
-                game_package.update({'suggest_result': game_status['suggest_result']})
-                game_package.update({'suggest_result_player': game_status['suggest_result_player']})
-                game_package.update({'suggested_player_location': game_status['suggested_cards']['room']})
+                # game_package.update({'suggest_result': game_status['suggest_result']})
+                if 'suggested_match_card' in game_status:
+                    game_package.update({'suggest_result_player': game_status['suggest_result_player']})
+                # game_package.update({'suggested_player_location': game_status['suggested_cards']['room']})
+                if 'suggested_match_card' in game_status:
+                    game_package.update({'suggested_match_card': game_status['suggested_match_card']})
             elif turn_status == 'accusation':
                 game_package.update({'accused_cards': game_status['accused_cards']})
                 if 'accused_result_player' in game_status:
