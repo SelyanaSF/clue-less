@@ -22,10 +22,9 @@ class Server:
         self.id_count = 0
         self.max_players = PLAYER_MAX
         #hardcoding as a placeholder
-
-        #self.game = Game(player_info_dict, 3)
-
-        #self.game = Game([],3)
+        player_info_dict = {1:'Colonal Mustard',
+                            2:'Miss Scarlet'}
+        self.game = Game(player_info_dict)
 
         try:
             self.server.bind((HOST_ADDR, HOST_PORT))
@@ -33,14 +32,13 @@ class Server:
             str(err)
 
         print("Waiting for a connection, server started")
-        print()
         self.start()
 
-    def threaded_client(self, conn, player_id, game_status):
+    def threaded_client(self, conn, player_id, game):
         conn.send(pickle.dumps(player_id))
         reply = ""
         prev_client_message = DEFAULT_TURN
-        server_update = game_status
+        server_update = game
         connected = True
 
         while connected:
@@ -56,42 +54,23 @@ class Server:
                 else:
                     if client_message != prev_client_message:
                         player_turn = Game_message_handler.process_client_update(client_message)
-
-                        #print("processed client message")
-
+                        print("processed client message")
+                        print(player_turn)
+                        
                         if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "MOVING" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
-
-                            if player_turn['turn_status'] == "join":
-                                # add new player to the game
-                                self.game.add_player(player_turn['player_id'], player_turn['player_token'])
-                                player = self.game.get_player_object(player_turn['player_id'])
-                                print("Added new player to the game: Player "+ player.get_player_id() + " is playing " + player.get_player_name())
-                                print()
-
-                                if (self.id_count == self.max_players and not self.game.dealt):
-                                    print("All players have joined the game")
-                                    print("dealing cards to players")
-                                    print()
-                                    self.game.deal_to_players()
-                                    self.game.dealt = True
-                                    print("Let's start the game!")
-                                    print()
-
-                                player_turn['turn_status'] = "get"
-                                server_update = Game_message_handler.build_game_package(player_turn)
-
-                            elif player_turn['turn_status'] != "get":
-                                #print(player_turn)
-                                # game_status = Game_processor.player_take_turn(player_turn)
-                                game_status = self.game.player_take_turn(player_turn)
-                                #print(game_status)
-                                server_update = Game_message_handler.build_game_package(game_status)
-                            else:
-                                server_update = player_turn
+                            #print(player_turn)
+                            # game_status = Game_processor.player_take_turn(player_turn)
+                            game_status = self.game.player_take_turn(player_turn)
+                            #print(game_status)
+                            server_update = Game_message_handler.build_game_package(game_status)
+                        else:
+                            server_update = player_turn
 
                         prev_client_message = client_message
 
                 #print(server_update)
+
+                
                 Game_message_handler.send_game_update(conn, server_update)
                 # print("... sent server update to client")
                 # print()
@@ -113,38 +92,29 @@ class Server:
         game_status = DEFAULT_GAME
         self.server.listen(2)
 
-        print("Welcome to Clueless!")
         #Enter the number of players and their names
-        num_players= int(input("Please enter the number of players: "))
+        num_players= int(input("Enter the number of players: "))
         
-        while (num_players < PLAYER_MIN or num_players > PLAYER_MAX):
+        while (num_players < 3 or num_players > 6):
             print("A total number of 3-6 players are allowed to participate in this game.")
             num_players= int(input("Enter the number of players: "))
 
         self.max_players = num_players
-
-        print("Game is loading...")
-        self.game = Game(num_players)
-        print("Waiting for players to join...")
-
-        #this is the while loop that will continue to run indefinietly for the server
+                
         while True:
             self.id_count = id_count
-
+        #this loops runs forever, so any print statements outside of 
+        # the if statement will print forever
 
             if (id_count < PLAYER_MAX):
-                #socket function called, waiting for an incoming connection from a new client
                 conn, addr = self.server.accept()
                 print("Connected to:", addr)
                 
                 game_status['player_count'] = id_count+1
 
-                #open new thread for new client server connection to run on
                 thread = threading.Thread(target=self.threaded_client, args=(conn, id_count+1, game_status))
                 thread.start()
                 id_count = threading.active_count()-1
                 print("Active Players: ", threading.active_count()-1)
-                print(id_count)
-                print("Waiting for all players to join...")
                 print()
 

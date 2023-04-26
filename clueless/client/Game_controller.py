@@ -14,7 +14,6 @@ import traceback
 
 DEFAULT_GAME = dict({'player_id': '0', 'turn_status': 'get'})
 server_update = dict({})
-CHARACTER_TOKENS = ["Mrs. Peacock", "Mrs. White", "Miss Scarlet", "Mr. Green", "Colonel Mustard", "Professor Plum"]
 
 class Game_controller:
 
@@ -64,14 +63,11 @@ class Game_controller:
 
         prev_game_state = DEFAULT_GAME
         print("You are Player ", self.id)
-        self.player_token = self.choose_player_token()
-
         self.game_state['player_id'] = self.player_id
         self.game_state['player_token'] = self.player_token
         self.game_state['turn_status'] = "get"
 
-        game_data = self.network.build_client_package(self.player_id, "join", self.player_token)
-        self.network.send(game_data)
+        game_data = self.network.build_client_package(self.player_id, "get", '')
 
         while self.playing:
             self.tick()
@@ -85,21 +81,18 @@ class Game_controller:
                 # game = self.network.send_receive(game_data)
                 # print("...sent and received client message")
                 
-                #self.network.send(game_data)
-                # print("...sent client message")
-                #game_data = self.network.build_client_package(self.player_id, "get", '')
-                #game = self.network.send_receive(game_data)
                 self.network.send(game_data)
-                #print("sent client message")
+                # print("...sent client message")
 
                 try:
                     game = self.network.receive()
-                    # print(f'......{game} ')
-                    # print(f'......{game_data} ')     
                 except:
                     print("Couldn't receive server update")
                     break
-
+                # game = self.network.receive()
+                # print(f'......{game} ')
+                # print(f'......{game_data} ')      
+                                                      
                 try:
                     prev_game_state = self.network.process_server_update(game, prev_game_state)
                     # print(f'server update: {prev_game_state} ')   
@@ -396,19 +389,6 @@ class Game_controller:
             # game = self.network.send_receive(turn_data)
             # print(f"game_controller ... receiving message from server for accusation: {game}")
             
-    def choose_player_token(self):
-        token = "None"
-        print("Please choose your character token")
-        print(CHARACTER_TOKENS)
-        token = input("Please enter you character choice: ")
-        while token not in CHARACTER_TOKENS:
-            token = input("Please enter a valid character choice: ")
-
-        print("You have chosen: " + token)
-        
-        return token
-
-
     def render(self):
         pygame.display.flip()
     

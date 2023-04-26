@@ -64,8 +64,6 @@ class Client_message_handler:
             client_package.update({'suggested_cards': contents})
         elif (state == 'ACCUSATION'):
             client_package.update({'accused_cards': contents})
-        elif (state == 'join'):
-            client_package.update({'player_token': contents})
 
         return client_package
     
@@ -77,10 +75,10 @@ class Client_message_handler:
     # TO DO: move and suggest
     def process_server_update(self, server_message, prev_server_message):
         # print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
-        if server_message != prev_server_message:
-            player_id = server_message['player_id']
-            #player_token = server_message['player_token']
-            turn_status = server_message['turn_status']
+        # if server_message != prev_server_message:
+        player_id = server_message['player_id']
+        #player_token = server_message['player_token']
+        turn_status = server_message['turn_status']
 
         if turn_status != "get":
             print("Player taking turn: ", player_id)

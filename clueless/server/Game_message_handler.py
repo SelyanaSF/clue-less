@@ -35,8 +35,6 @@ class Game_message_handler:
             elif turn_status == 'ACCUSATION':
                 player_turn.update({'turn_status': 'accusation'})
                 player_turn.update({'accused_cards': client_message['accused_cards']})
-            elif turn_status == "join":
-                player_turn.update({'player_token': client_message['player_token']})
 
         # print(f'...processed player_turn {player_turn}')
         return player_turn
@@ -46,7 +44,7 @@ class Game_message_handler:
         # print("...building message package for client")
         game_package = dict({
             'player_id': game_status['player_id'],
-            'player_token': game_status['player_token'],
+            #'player_token': game_status['player_token'],
             'turn_status': game_status['turn_status']
         })
 

@@ -6,29 +6,25 @@ from clueless.server.Player import Player
 
 class Game:
 
-    def __init__(self, num_players):
+    def __init__(self, player_info_dict):
         # print('GAME INITIALIZED')
-        self.num_players = num_players
+        self.num_players = len(player_info_dict)
         self.players = []
-        self.dealt = False
-        self.player_info_dict = {1:'Colonal Mustard',
-                                2:'Miss Scarlet',
-                                3:'Professor Plum'}
 
-        # for player_id, player_name in player_info_dict.items():
-        #     this_player = Player(player_name, player_id)
-        #     self.players.append(this_player)
+        for player_id, player_name in player_info_dict.items():
+            this_player = Player(player_name, player_id)
+            self.players.append(this_player)
         self.game_deck = Deck()                                 # dict for initial overall game deck
         self.case_file = self.game_deck.get_secret_deck()       # dict of three secret cards
         
         # Below needs ALL player objects initialized
-        #self.deal_to_players()
+        self.deal_to_players()
         # self.turn_state = None                                # turn state for current player
         self.game_status = None                                 # game state of entire game
-        print(f'  case_file: {self.case_file}')
-        # print('   with players')
-        # for p in self.players:
-        #     print(f'       {p.get_player_name()}, {p.get_player_id()}, {p.get_hand()}')
+        print(f'  with case_file {self.case_file}')
+        print('   with players')
+        for p in self.players:
+            print(f'       {p.get_player_name()}, {p.get_player_id()}, {p.get_hand()}')
         
         ############################
         ##### INITIALIZE TILES #####
@@ -177,28 +173,18 @@ class Game:
             # unsure what we would want returned here, placeholder print
             print("That player is not in this game, please try again.")
 
-
     def get_player_object(self, player_id):
         for i, player in enumerate(self.players):
             # print(f'...comparing {player.get_player_id()} to {player_id}')
             if player.get_player_id() == player_id:
                 return player
             
-    #method to add a new player object to the game
-    def add_player(self, player_id, player_token):
-        #print("adding new player")
-        new_player = Player(player_token, player_id)
-        self.players.append(new_player)
-
-
     # A method that deals a deck of cards to players 
     def deal_to_players(self)->dict:
         num_players= len(self.players)
         dealt_decks = self.game_deck.deal(num_players)
         for i, player in enumerate(self.players):
             player.set_player_hand(dealt_decks[i])
-            print(f'Player {player.get_player_id()} is playing {player.get_player_name()} with hand {player.get_hand()}')
-            print()
 
     # This method determines what turn the player is taking and then routes to 
     # appropriate game logic functions to carry out turn accordingly
@@ -344,3 +330,5 @@ class Game:
 
 #     else:
 #         print("Invalid move, try again!")
+
+
