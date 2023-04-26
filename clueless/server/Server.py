@@ -22,9 +22,7 @@ class Server:
         self.id_count = 0
         self.max_players = PLAYER_MAX
         #hardcoding as a placeholder
-
         #self.game = Game(player_info_dict, 3)
-
         #self.game = Game([],3)
 
         try:
@@ -45,7 +43,7 @@ class Server:
 
         while connected:
             try:
-                #print("Server receiving player data")
+                #print("Server receiving player data")'
                 client_message = Game_message_handler.receive_client_update(conn)
                 #print("Server received player data")
     
@@ -58,7 +56,6 @@ class Server:
                         player_turn = Game_message_handler.process_client_update(client_message)
 
                         #print("processed client message")
-
                         if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "MOVING" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
 
                             if player_turn['turn_status'] == "join":
@@ -92,7 +89,13 @@ class Server:
                         prev_client_message = client_message
 
                 #print(server_update)
-                Game_message_handler.send_game_update(conn, server_update)
+                with self.clients_lock:
+                    for c in self.clients:
+                        Game_message_handler.send_game_update(c, server_update)
+                        # if server_update['turn_status']!='get':
+                            # print(f'client {c} received {server_update}')
+                # print()
+                # Game_message_handler.send_game_update(conn, server_update)
                 # print("... sent server update to client")
                 # print()
             except:
@@ -135,8 +138,8 @@ class Server:
             if (id_count < PLAYER_MAX):
                 #socket function called, waiting for an incoming connection from a new client
                 conn, addr = self.server.accept()
+                self.clients.add(conn)
                 print("Connected to:", addr)
-                
                 game_status['player_count'] = id_count+1
 
                 #open new thread for new client server connection to run on

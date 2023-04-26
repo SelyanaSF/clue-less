@@ -6,6 +6,7 @@ from clueless.server.Player import Player
 
 class Game:
 
+
     def __init__(self, num_players):
         # print('GAME INITIALIZED')
         self.num_players = num_players
@@ -15,6 +16,7 @@ class Game:
                                 2:'Miss Scarlet',
                                 3:'Professor Plum'}
 
+
         # for player_id, player_name in player_info_dict.items():
         #     this_player = Player(player_name, player_id)
         #     self.players.append(this_player)
@@ -22,6 +24,7 @@ class Game:
         self.case_file = self.game_deck.get_secret_deck()       # dict of three secret cards
         
         # Below needs ALL player objects initialized
+
         #self.deal_to_players()
         # self.turn_state = None                                # turn state for current player
         self.game_status = None                                 # game state of entire game
@@ -203,7 +206,7 @@ class Game:
     # This method determines what turn the player is taking and then routes to 
     # appropriate game logic functions to carry out turn accordingly
     def player_take_turn(self, player_turn):
-        print(" PLAYER TAKING TURN")
+        # print(" PLAYER TAKING TURN")
         '''
         INPUT: player_turn : dictionary from Game_message_handler.process_client_update(client_message)
             {'player_id': str,
@@ -246,7 +249,7 @@ class Game:
             backend_roomname = self.get_backend_tilename(player_turn['accused_cards']['room'])
             backend_weaponname = self.get_backend_weaponname(player_turn['accused_cards']['weapon'])
             
-            print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}")
+            # print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}")
             accuse_result = Game_processor.accuse(backend_playername, backend_weaponname, backend_roomname, self.case_file)
             if accuse_result:
                 # print('    Player accused correctly')
@@ -256,8 +259,7 @@ class Game:
                 curr_player.set_player_status('LOST')
                 # print('    Player accused incorrectly')
             
-        elif player_turn['turn_status'] == "suggestion":
-        
+        elif player_turn['turn_status'] == "suggestion":        
             print("  Player chooses to suggest")
             print(player_turn['suggested_cards'])
 

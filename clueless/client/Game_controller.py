@@ -90,15 +90,17 @@ class Game_controller:
                 #game_data = self.network.build_client_package(self.player_id, "get", '')
                 #game = self.network.send_receive(game_data)
                 self.network.send(game_data)
-                #print("sent client message")
+                # print("...sent client message")
 
                 try:
                     game = self.network.receive()
-                    # print(f'......{game} ')
-                    # print(f'......{game_data} ')     
                 except:
                     print("Couldn't receive server update")
                     break
+                # game = self.network.receive()
+                # print(f'......{game} ')
+                # print(f'......{game_data} ')      
+                                                      
 
                 try:
                     prev_game_state = self.network.process_server_update(game, prev_game_state)
@@ -107,15 +109,22 @@ class Game_controller:
                     if prev_game_state['turn_status']=='accusation':
                         this_player_id = prev_game_state['player_id']
                         if 'accused_result_player' not in prev_game_state:
-                            print("You lost!")
-                            self.board.display_update(self.screen, "You lost!")
-                            # ISSUE: how to access other player id
+                            # print(f"{this_player_id} vs {self.player_id}")
+                            print(f"Player {this_player_id} lost!")
+                            self.board.display_update(self.screen, f"Player {this_player_id} lost!")
+                            # if this_player_id == self.player_id:
+                            #     print("You lost!")
+                            #     self.board.display_update(self.screen, "You lost!")
+                            # else:
+                            #     print(f"Player {this_player_id} lost!")
+                            #     self.board.display_update(self.screen, f"Player {this_player_id} lost!")
                         else: 
                             print("You win!")
+                            self.board.display_update(self.screen, "You win!")
                     # elif  # print move stuff here
-                except Exception as err:
+                except:
                     print("Couldn't process_server_update")
-                    print(err)
+
                     break
 
             except:

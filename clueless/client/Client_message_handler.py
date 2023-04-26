@@ -80,7 +80,7 @@ class Client_message_handler:
         player_id = server_message['player_id']
         #player_token = server_message['player_token']
         turn_status = server_message['turn_status']
-
+        
         if server_message != prev_server_message:
             if turn_status != "get":
                 print("Player taking turn: ", player_id)
