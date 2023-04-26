@@ -14,6 +14,7 @@ class Client_message_handler:
         self.port = HOST_PORT
         self.addr = (self.server, self.port)
         self.id = self.connect()
+        
 
     def get_id(self):
         return self.id
@@ -22,8 +23,9 @@ class Client_message_handler:
         try:
             self.client.connect(self.addr)
             return pickle.loads(self.client.recv(4096))
-        except:
-            pass
+        except socket.error as err:
+            print(err)
+            # pass
 
     def send_receive(self, data):
         #print("Player sending information to the Server")

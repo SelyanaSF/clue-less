@@ -23,7 +23,8 @@ class Server:
         self.max_players = PLAYER_MAX
         #hardcoding as a placeholder
         #self.game = Game(player_info_dict, 3)
-        #self.game = Game([],3)
+        #self.game = Game([],3)'
+        self.clients = []
 
         try:
             self.server.bind((HOST_ADDR, HOST_PORT))
@@ -88,14 +89,15 @@ class Server:
 
                         prev_client_message = client_message
 
-                #print(server_update)
-                with self.clients_lock:
-                    for c in self.clients:
-                        Game_message_handler.send_game_update(c, server_update)
-                        # if server_update['turn_status']!='get':
-                            # print(f'client {c} received {server_update}')
+# TO FIX 
+                        # # #print(server_update)
+                        # with self.clients_lock:
+                        #     for c in self.clients:
+                        #         Game_message_handler.send_game_update(c, server_update)
+                        #         # if server_update['turn_status']!='get':
+                        #             # print(f'client {c} received {server_update}')
                 # print()
-                # Game_message_handler.send_game_update(conn, server_update)
+                Game_message_handler.send_game_update(conn, server_update)
                 # print("... sent server update to client")
                 # print()
             except:
@@ -138,7 +140,7 @@ class Server:
             if (id_count < PLAYER_MAX):
                 #socket function called, waiting for an incoming connection from a new client
                 conn, addr = self.server.accept()
-                self.clients.add(conn)
+                self.clients.append(conn)
                 print("Connected to:", addr)
                 game_status['player_count'] = id_count+1
 
