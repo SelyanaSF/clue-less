@@ -9,7 +9,7 @@ class Game_message_handler:
         pass
 
     def send_game_update(conn, game_update):
-        # print(f"... sending to client {game_update}")
+        print(f"... sending to client {game_update}")
         conn.send(pickle.dumps(game_update))
 
     def receive_client_update(conn):
@@ -43,10 +43,10 @@ class Game_message_handler:
 
 
     def build_game_package(game_status):
-        # print("...building message package for client")
+        print("...building message package for client")
         game_package = dict({
             'player_id': game_status['player_id'],
-            'player_token': game_status['player_token'],
+            # 'player_token': game_status['player_token'],
             'turn_status': game_status['turn_status']
         })
 
@@ -71,3 +71,13 @@ class Game_message_handler:
 
         # print(f'...built message package for client{game_package}')
         return game_package
+
+    def broadcast(clients, message):
+        print(f'...broadcasting {message} to this many clients: {len(clients)}')
+        # client is same as conn
+        for client in clients:
+            try: 
+                Game_message_handler.send_game_update(client, message)
+            except Exception as err:
+                print(err)
+            # client.send(message)

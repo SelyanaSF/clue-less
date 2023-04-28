@@ -79,8 +79,6 @@ class Server:
                                 server_update = Game_message_handler.build_game_package(player_turn)
 
                             elif player_turn['turn_status'] != "get":
-                                #print(player_turn)
-                                # game_status = Game_processor.player_take_turn(player_turn)
                                 game_status = self.game.player_take_turn(player_turn)
                                 #print(game_status)
                                 server_update = Game_message_handler.build_game_package(game_status)
@@ -88,16 +86,22 @@ class Server:
                                 server_update = player_turn
 
                         prev_client_message = client_message
-
-# TO FIX 
-                        # # #print(server_update)
+                        # #print(server_update)
                         # with self.clients_lock:
                         #     for c in self.clients:
                         #         Game_message_handler.send_game_update(c, server_update)
                         #         # if server_update['turn_status']!='get':
                         #             # print(f'client {c} received {server_update}')
                 # print()
-                Game_message_handler.send_game_update(conn, server_update)
+                # Game_message_handler.send_game_update(conn, server_update)
+                try:
+                    Game_message_handler.broadcast(self.clients, server_update)
+                except Exception as err:
+                    # index = self.clients.index(conn)
+                    # self.clients.remove(conn)
+                    # conn.close()
+                    print(err)
+                    break
                 # print("... sent server update to client")
                 # print()
             except:
@@ -113,6 +117,7 @@ class Server:
 
         sys.exit("Server Closed")
 
+    
     def start(self):
         id_count = self.id_count
         game_status = DEFAULT_GAME

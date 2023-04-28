@@ -185,6 +185,7 @@ class Game:
         for i, player in enumerate(self.players):
             # print(f'...comparing {player.get_player_id()} to {player_id}')
             if player.get_player_id() == player_id:
+                # print(f'...returning player obj for {player.get_player_id()}')
                 return player
             
     #method to add a new player object to the game
@@ -228,7 +229,7 @@ class Game:
             } 
         '''
         # Get player object
-        curr_player = self.get_player_object(int(player_turn['player_id']))
+        curr_player = self.get_player_object(str(player_turn['player_id']))
         
         #  Game status stores the result of player taking a turn
         game_status = player_turn.copy()
@@ -249,15 +250,15 @@ class Game:
             backend_roomname = self.get_backend_tilename(player_turn['accused_cards']['room'])
             backend_weaponname = self.get_backend_weaponname(player_turn['accused_cards']['weapon'])
             
-            # print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}")
+            print(f"  Player chooses to accuse {backend_playername},{backend_weaponname},{backend_roomname}. case file is {self.case_file}")
             accuse_result = Game_processor.accuse(backend_playername, backend_weaponname, backend_roomname, self.case_file)
             if accuse_result:
-                # print('    Player accused correctly')
+                print('    Player accused correctly')
                 # Include name of current player if they accused correctly
                 game_status['accused_result_player'] = curr_player.get_player_name()
             else: 
                 curr_player.set_player_status('LOST')
-                # print('    Player accused incorrectly')
+                print('    Player accused incorrectly')
             
         elif player_turn['turn_status'] == "suggestion":        
             print("  Player chooses to suggest")
@@ -310,7 +311,7 @@ class Game:
         #     game_status['suggest_result_player'] = player_w_match
         #     game_status['suggested_match_card']= matched_card
         
-        # print(f'... return game_status {game_status}')
+        print(f'... return game_status {game_status}')
         game_status['ready']=True
         return game_status # --goes to--> server_update = Game_message_handler.build_game_package(game_status)
 

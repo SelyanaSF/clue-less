@@ -222,7 +222,6 @@ class Game_processor:
             print()
 
         return player_turn
-
     #     return player_turn
 
     # This method records an accusation made by a player. It does not return
@@ -230,7 +229,6 @@ class Game_processor:
     # If the accusation is correct
     def accuse(player, weapon, room, case_file):
         case_file_reversed = {card_type: card_val for card_val, card_type in case_file.items()}
-        
         # If accusation is correct, return True
         return player == case_file_reversed['character'] and weapon == case_file_reversed['weapon'] and room == case_file_reversed['room']   
 
@@ -315,31 +313,7 @@ class Game_processor:
     #             if suggestion['player'] == player:
     #                 player_suggestions.append(suggestion)
     #         return player_suggestions
-        
-    # This method records an accusation made by a player. It does not return
-    # anything, but it modifies the accusations attribute of the ClueGame object. 
-    # If the accusation is correct, it also sets the game_over attribute to True.  
-    def accuse(self, player, weapon, room):
-        accusation = {'player': player, 'weapon': weapon, 'room': room}
-        self.accusations.append(accusation) # QUESTION: What's the purpose of appending accusations?
-        # If accusation is correct
-        if player == self.solution['player'] and weapon == self.solution['weapon'] and room == self.solution['room']:
-            self.game_over = True
-            # return winner name
-            return True
-        # If accusation is incorrect
-        else: 
-            # TO DO 
-            # set player to lost/inactive
-            # only display lost and case file to losing player
-            # continue to next turn
-            return False
-        # TO DO 
-        #   update game_status?
-        #   send game_status to Game_message_handler
-        #   Game_message_handler receive_game_status()
-        #   Game_message_handler build_return_package()
-        #   someone send package to Client_message_handler
+    
 
     # This method checks if an accusation is valid. It returns a Boolean value 
     # indicating whether or not the accusation is valid.   

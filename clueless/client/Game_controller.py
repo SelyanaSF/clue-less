@@ -6,6 +6,7 @@ from clueless.client.Weapon_image import Weapon_Image
 from clueless.client import Button, Client_game_board
 import pickle
 import pygame
+import threading
 import random
 
 from datetime import datetime
@@ -94,14 +95,16 @@ class Game_controller:
 
                 try:
                     game = self.network.receive()
-                except:
+                except Exception as err:
                     print("Couldn't receive server update")
-                    break
+                    print(err)
+                    # break
                 # game = self.network.receive()
                 # print(f'......{game} ')
                 # print(f'......{game_data} ')      
                                                       
-
+                # if game['player_id'] != self.player_id:
+                #     print(f"... received from different player { game['player_id']}")   
                 try:
                     prev_game_state = self.network.process_server_update(game, prev_game_state)
                     # print(f'server update: {prev_game_state} ')   
@@ -109,15 +112,12 @@ class Game_controller:
                     if prev_game_state['turn_status']=='accusation':
                         this_player_id = prev_game_state['player_id']
                         if 'accused_result_player' not in prev_game_state:
-                            # print(f"{this_player_id} vs {self.player_id}")
-                            print(f"Player {this_player_id} lost!")
-                            self.board.display_update(self.screen, f"Player {this_player_id} lost!")
-                            # if this_player_id == self.player_id:
-                            #     print("You lost!")
-                            #     self.board.display_update(self.screen, "You lost!")
-                            # else:
-                            #     print(f"Player {this_player_id} lost!")
-                            #     self.board.display_update(self.screen, f"Player {this_player_id} lost!")
+                            if this_player_id == self.player_id:
+                                print("You lost!")
+                                self.board.display_update(self.screen, "You lost!")
+                            else:
+                                print(f"Player {this_player_id} lost!")
+                                self.board.display_update(self.screen, f"Player {this_player_id} lost!")
                         else: 
                             print("You win!")
                             self.board.display_update(self.screen, "You win!")
