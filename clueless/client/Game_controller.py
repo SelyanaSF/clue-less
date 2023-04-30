@@ -46,7 +46,7 @@ class Game_controller:
         player_caption = "Clue-Less Player " + self.player_id
         pygame.display.set_caption(player_caption)
         self.game_state = DEFAULT_GAME
-        self.player_token = "None"
+        self.player_token = 'None'
         self.state = "SPLASH_SCREEN"
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.base_color = self.randomise_color()
