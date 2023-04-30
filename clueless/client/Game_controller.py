@@ -410,6 +410,7 @@ class Game_controller:
         data_folder = Path("clueless/data/graphics/")
         mouse_pos = pygame.mouse.get_pos()
         image = pygame.image.load(data_folder / "splash.png")
+        image = pygame.transform.scale(image, (self.WIDTH, self.HEIGHT))
         self.screen.blit(image, (0, 0))
 
         TITLE_TEXT = self.get_font(75).render("CLUEDO", True, "#b68f40")
@@ -417,9 +418,9 @@ class Game_controller:
         self.screen.blit(TITLE_TEXT, TITLE_RECT)
 
         PLAY_BUTTON = Splash_Button(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(300, 450), 
-                            text_input="PLAY", font=self.get_font(30), base_color="#d7fcd4", hovering_color="White")
+                            text_input="PLAY", font=self.get_font(30), base_color="#76EEC6", hovering_color="White")
         QUIT_BUTTON = Splash_Button(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(750, 450), 
-                            text_input="QUIT", font=self.get_font(30), base_color="#d7fcd4", hovering_color="White")
+                            text_input="QUIT", font=self.get_font(30), base_color="#76EEC6", hovering_color="White")
 
 
         for button in [PLAY_BUTTON, QUIT_BUTTON]:
