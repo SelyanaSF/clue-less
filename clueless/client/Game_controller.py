@@ -2,7 +2,7 @@
 from clueless.client.Client_message_handler import Client_message_handler
 from clueless.server.Deck import Deck
 from clueless.client.Weapon_image import Weapon_Image
-from clueless.client.Button_Image import Button_Image
+from clueless.client.Splash_Button import Splash_Button
 from clueless.client import Button, Client_game_board
 from pathlib import Path
 import pickle
@@ -416,9 +416,9 @@ class Game_controller:
         TITLE_RECT = TITLE_TEXT.get_rect(center=(540, 100))
         self.screen.blit(TITLE_TEXT, TITLE_RECT)
 
-        PLAY_BUTTON = Button_Image(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(300, 450), 
+        PLAY_BUTTON = Splash_Button(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(300, 450), 
                             text_input="PLAY", font=self.get_font(30), base_color="#d7fcd4", hovering_color="White")
-        QUIT_BUTTON = Button_Image(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(750, 450), 
+        QUIT_BUTTON = Splash_Button(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(750, 450), 
                             text_input="QUIT", font=self.get_font(30), base_color="#d7fcd4", hovering_color="White")
 
 
