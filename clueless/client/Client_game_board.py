@@ -313,6 +313,52 @@ class Client_game_board:
             
         return token_info_dict
     
+    def get_font(self,size): # Returns Press-Start-2P in the desired size
+        data_folder = Path("clueless/data/font/")
+        return pygame.font.Font(data_folder / "font.ttf", size)
+    
+    def load_character_selection_board(self, screen):
+        # Load instruction
+        CHOOSE_CHARACTER = self.get_font(25).render("CHOOSE YOUR CHARACTER",True,"Red")
+        CHOOSE_CHARACTER_RECT = CHOOSE_CHARACTER.get_rect(center=(530, 80))
+
+        # Load character card
+        mrs_white = pygame.image.load(data_folder / 'mrs_white.png').convert_alpha()
+        mrs_peacock = pygame.image.load(data_folder / 'mrs_peacock.png').convert_alpha()
+        mr_green = pygame.image.load(data_folder / 'mr_green.png').convert_alpha()
+        miss_scarlet = pygame.image.load(data_folder / 'miss_scarlet.png').convert_alpha()
+        colonel_mustard = pygame.image.load(data_folder / 'colonel_mustard.png').convert_alpha()
+        prof_plum = pygame.image.load(data_folder / 'prof_plum.png').convert_alpha()
+
+        # Scale character card
+        colonel_mustard = pygame.transform.scale(colonel_mustard, (100, 120))
+        miss_scarlet = pygame.transform.scale(miss_scarlet, (100, 120))
+        mr_green = pygame.transform.scale(mr_green, (100, 120))
+        mrs_peacock = pygame.transform.scale(mrs_peacock, (100, 120))
+        mrs_white = pygame.transform.scale(mrs_white, (100, 120))
+        prof_plum = pygame.transform.scale(prof_plum, (100, 120))
+
+        # create character rectangle 
+        colonel_mustard_rect = colonel_mustard.get_rect(topleft=(140,190))
+        miss_scarlet_rect = miss_scarlet.get_rect(topleft=(460,190))
+        mr_green_rect = mr_green.get_rect(topleft=(790,190))
+        mrs_peacock_rect = mrs_peacock.get_rect(topleft=(140,380))
+        mrs_white_rect = mrs_white.get_rect(topleft=(460,380))
+        prof_plum_rect = prof_plum.get_rect(topleft=(790,380))
+
+        rectangle_dict = {'Colonel Mustard':colonel_mustard_rect, 'Miss Scarlet': miss_scarlet_rect,'Mr. Green': mr_green_rect,
+                        'Mrs. Peacock':mrs_peacock_rect,'Mrs. White':mrs_white_rect,'Professor Plum':prof_plum_rect}
+        
+        screen.blit(CHOOSE_CHARACTER, CHOOSE_CHARACTER_RECT)
+        screen.blit(colonel_mustard,colonel_mustard_rect)
+        screen.blit(miss_scarlet,miss_scarlet_rect)
+        screen.blit(mr_green,mr_green_rect)
+        screen.blit(mrs_peacock,mrs_peacock_rect)
+        screen.blit(mrs_white,mrs_white_rect)
+        screen.blit(prof_plum,prof_plum_rect)
+
+        return rectangle_dict
+    
     def load_button(self, screen, text, buttonXPos, buttonYPos):
         button_color = (150, 150, 150)
         button_width = 160
