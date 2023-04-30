@@ -326,7 +326,6 @@ class Game_controller:
     ################################################################################
     def add_suggest_view(self, events):
         suggested_card_dict = {}
-        mousePos = pygame.mouse.get_pos()
         pygame.display.set_caption("Suggest Player : ")
         self.screen.fill(self.base_color)
         self.suggest_weapon_dict = self.board.get_weapon_directory()
@@ -368,7 +367,6 @@ class Game_controller:
     ################################################################################
     def add_accuse_view(self, events):
         accused_card_dict = {}
-        mousePos = pygame.mouse.get_pos()
         pygame.display.set_caption("Accuse Player : ")
         self.screen.fill(self.base_color)
         self.accuse_weapon_dict = self.board.get_weapon_directory()
@@ -437,7 +435,6 @@ class Game_controller:
 
     def choose_player_token(self):
         self.screen.fill(self.base_color)
-        data_folder = Path("clueless/data/graphics/")
         mouse_pos = pygame.mouse.get_pos()
 
         # Load view from board class
