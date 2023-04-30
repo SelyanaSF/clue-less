@@ -413,8 +413,8 @@ class Game_controller:
         image = pygame.transform.scale(image, (self.WIDTH, self.HEIGHT))
         self.screen.blit(image, (0, 0))
 
-        TITLE_TEXT = self.get_font(75).render("CLUEDO", True, "#b68f40")
-        TITLE_RECT = TITLE_TEXT.get_rect(center=(540, 100))
+        TITLE_TEXT = self.get_font(65).render("CLUE-LESS", True, "#b68f40")
+        TITLE_RECT = TITLE_TEXT.get_rect(center=(530, 100))
         self.screen.blit(TITLE_TEXT, TITLE_RECT)
 
         PLAY_BUTTON = Splash_Button(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(300, 450), 
