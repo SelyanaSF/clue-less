@@ -45,7 +45,7 @@ class Game_processor:
             player_first_move = {
                 'Miss Scarlet' : 'Hallway 02',
                 'Professor Plum' : 'Hallway 03',
-                'Colonal Mustard' : 'Hallway 05',
+                'Colonel Mustard' : 'Hallway 05',
                 'Mrs. Peacock' : 'Hallway 08',
                 'Mr. Green' : 'Hallway 11',
                 'Mrs. White' : 'Hallway 12'

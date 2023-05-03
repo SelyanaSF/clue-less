@@ -194,6 +194,7 @@ class Game:
         new_player = Player(player_token, player_id)
         self.players.append(new_player)
         print(self.players)
+        print(f'Added {new_player.get_player_name()}')
 
 
     # A method that deals a deck of cards to players 

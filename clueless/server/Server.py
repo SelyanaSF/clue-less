@@ -59,11 +59,11 @@ class Server:
                         #print("processed client message")
                         if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
 
-                            if player_turn['turn_status'] == "join":
+                            if player_turn['turn_status'] == "chose_token":
                                 # add new player to the game
                                 self.game.add_player(player_turn['player_id'], player_turn['player_token'])
                                 player = self.game.get_player_object(player_turn['player_id'])
-                                print(player)
+                                print(f'!!! {player.get_player_name()}')
                                 print("Added new player to the game: Player "+ player.get_player_id() + " is playing " + player.get_player_name())
                                 print()
 
@@ -130,12 +130,12 @@ class Server:
                     # index = self.clients.index(conn)
                     # self.clients.remove(conn)
                     # conn.close()
-                    print(err)
+                    # print(err)
                     break
                 # print("... sent server update to client")
                 # print()
             except Exception as err:
-                print(err)
+                # print(err)
                 break
 
         print("Lost connection")

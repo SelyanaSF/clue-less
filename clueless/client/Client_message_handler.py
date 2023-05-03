@@ -25,7 +25,7 @@ class Client_message_handler:
             return pickle.loads(self.client.recv(4096*10))
         except socket.error as err:
             print(err)
-            # pass
+            pass
 
     def send_receive(self, data):
         #print("Player sending information to the Server")
@@ -39,6 +39,7 @@ class Client_message_handler:
             return pickle.loads(self.client.recv(4096*10))
         except socket.error as err:
             print(err)
+            pass
 
     def send(self, data):
         # print(f"Player sending information to the Server {data}") 
@@ -48,6 +49,7 @@ class Client_message_handler:
                 self.client.send(dic1)
             except socket.error as err:
                 print(err)
+                pass
 
     def receive(self):
         server_update = pickle.loads(self.client.recv(4096*10))
@@ -71,9 +73,9 @@ class Client_message_handler:
             client_package.update({'suggested_cards': contents})
         elif (state == 'ACCUSATION'):
             client_package.update({'accused_cards': contents})
-        elif (state == 'join'):
+        elif (state == 'chose_token'): # join
             client_package.update({'player_token': contents})
-
+        
         return client_package
     
     def get_server_update(self):

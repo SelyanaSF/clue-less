@@ -40,7 +40,7 @@ class Game_message_handler:
             elif turn_status == 'ACCUSATION':
                 player_turn.update({'turn_status': 'accusation'})
                 player_turn.update({'accused_cards': client_message['accused_cards']})
-            elif turn_status == "join":
+            elif turn_status == "chose_token": #join
                 player_turn.update({'player_token': client_message['player_token']})
 
         # print(f'...processed player_turn {player_turn}')
@@ -88,5 +88,6 @@ class Game_message_handler:
             try: 
                 Game_message_handler.send_game_update(client, message)
             except Exception as err:
-                print(err)
+                # print(err)
+                hold = ''
             # client.send(message)

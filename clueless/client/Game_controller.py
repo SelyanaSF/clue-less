@@ -25,7 +25,7 @@ class Game_controller:
     HEIGHT = 700
     FPS = 60
 
-    # There are FOUR Game State : "START", "MOVING", "ACCUSING", "SUGGESTING", "CHOOSING_TOKEN", "SPLASH_SCREEN"
+    # There are FOUR Game State : "START", "MOVING", "ACCUSING", "SUGGESTING", "CHOOSING_TOKEN", "SPLASH_SCREEN", "chose_token"
     # Each State will have different views
     # SEND MESSAGE TO SERVER comments are placeholder where the code sends message to server
     ############################################################################################
@@ -100,8 +100,8 @@ class Game_controller:
                     game = self.network.receive()
                 except Exception as err:
                     print("Couldn't receive server update")
-                    print(type(err))
-                    print(err)
+                    # print(type(err))
+                    # print(err)
                     # break
                 # game = self.network.receive()
                 # print(f'......{game} ')
@@ -143,6 +143,9 @@ class Game_controller:
                     
                     elif prev_game_state['turn_status'] == 'movement':
                         print(f"Success! Player {prev_game_state['player_id']} has moved to {prev_game_state['player_location']}!")
+                        
+                        # TO DO convert prev_game_state['player_location'] backend to front end room name
+                        self.move_token(self.player_token, (200, 125)) #self.tiles_directory[self.room_choice][1])
                         
                         #game_data = self.network.build_client_package(self.player_id, 'get', self.player_token)
 
@@ -497,7 +500,7 @@ class Game_controller:
                     self.game_state['player_id'] = self.player_id
                     self.game_state['player_token'] = self.player_token
                     self.game_state['turn_status'] = "get"
-                    game_data = self.network.build_client_package(self.player_id, "join", self.player_token)
+                    game_data = self.network.build_client_package(self.player_id, "chose_token", self.player_token)
                     self.network.send(game_data)
 
                     self.state = 'START'
