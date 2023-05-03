@@ -1,11 +1,12 @@
 # Game Module
-from sys import exit
 from clueless.client.Client_message_handler import Client_message_handler
 from clueless.server.Deck import Deck
 from clueless.client.Weapon_image import Weapon_Image
+from clueless.client.Splash_Button import Splash_Button
 from clueless.client import Button, Client_game_board
+from pathlib import Path
 import pickle
-import pygame
+import pygame, sys
 import threading
 import random
 
@@ -24,7 +25,7 @@ class Game_controller:
     HEIGHT = 700
     FPS = 60
 
-    # There are FOUR Game State : "START", "MOVEMENT", "ACCUSATION", "SUGGESTION"
+    # There are FOUR Game State : "START", "MOVING", "ACCUSING", "SUGGESTING", "CHOOSING_TOKEN", "SPLASH_SCREEN"
     # Each State will have different views
     # SEND MESSAGE TO SERVER comments are placeholder where the code sends message to server
     ############################################################################################
@@ -46,13 +47,14 @@ class Game_controller:
         pygame.display.set_caption(player_caption)
         self.game_state = DEFAULT_GAME
         self.player_token = 'None'
-        self.state = "START"
+        self.state = "SPLASH_SCREEN"
         self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
         self.base_color = self.randomise_color()
+        self.token_coor_dict = {}
+        self.tiles_directory = {}
         self.screen.fill(self.base_color)
         self.clock = pygame.time.Clock()
         self.board = Client_game_board.Client_game_board()
-        self.message_for_server = {}
         self.character_choice = None
         self.weapon_choice = None
         self.room_choice = None
@@ -65,8 +67,6 @@ class Game_controller:
 
         prev_game_state = DEFAULT_GAME
         print("You are Player ", self.id)
-        self.player_token = self.choose_player_token()
-
         self.game_state['player_id'] = self.player_id
         self.game_state['player_token'] = self.player_token
         self.game_state['turn_status'] = "get"
@@ -153,13 +153,18 @@ class Game_controller:
             if event.type == pygame.QUIT:
                 self.playing = False
 
+            if (self.state == 'SPLASH_SCREEN'):
+                self.add_splash_screen(events)
+
             if (self.state == 'START'):
-                self.message_for_server = {}
                 self.room_choice = None
                 self.screen.fill(self.base_color)
                 turn_data = self.add_main_view(events)
-
             # This is to highlight rectangle when choosing the room and print the choosen one on the options box
+
+            if (self.state == 'CHOOSING_TOKEN'):
+                self.choose_player_token()
+
             if (self.state == 'MOVING'): #'MOVEMENT'):
                 turn_data = self.add_main_view(events)
                 self.board.highlight_tile_rect(self.screen,(0,100,0),'All')
@@ -176,15 +181,13 @@ class Game_controller:
                 enterRect = pygame.Rect(810, 560, 60, 35)
                 if (enterRect.collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
                     if self.room_choice is not None:
-                        # print('Player choose to go to tile : ' + self.room_choice)
-                        self.message_for_server["room"] = self.room_choice
-                        # print('Updated self.message_for_server with room choice')
-                        # self.state = "START"
-                        self.state = "MOVEMENT"
-                        # SEND MESSAGE TO SERVER
+                        self.state = "MOVING"
+                        # SEND MESSAGE TO SERVER AND MOVE TOKEN
                         turn_data = self.network.build_client_package(self.player_id, self.state, self.room_choice)
+                        self.move_token(self.player_token, self.tiles_directory[self.room_choice][1])
                         # self.network.send(turn_data)
                         # print(f"sending message to server for movement: {self.player_id}, {self.state}, {self.room_choice}")
+                        self.state = 'START'
 
                 #Manually record the rectangle position of close button. Everytime this button is pressed, close the options box
                 closeRect = pygame.Rect(970, 570, 25, 25)
@@ -205,7 +208,6 @@ class Game_controller:
                         if (self.suggest_weapon_dict[key][2] == 'weapon') :
                             # print('Player choose weapon: ' + key)
                             self.suggest_weapon_dict[key][3] = True
-                            self.message_for_server['weapon'] = key
                             self.weapon_choice = key
 
                 for key in self.suggest_suspect_dict:
@@ -217,7 +219,6 @@ class Game_controller:
                         if (self.suggest_suspect_dict[key][2] == 'suspect') :
                             # print('Player choose suspect: ' + key)
                             self.suggest_suspect_dict[key][3] = True
-                            self.message_for_server['suspect'] = key
                             self.character_choice = key
 
                 turn_data = self.network.build_client_package(self.player_id, self.state, suggested_card_dict)
@@ -234,7 +235,6 @@ class Game_controller:
                         if (self.accuse_weapon_dict[key][2] == 'weapon') :
                             # print('Player choose weapon: ' + key)
                             self.accuse_weapon_dict[key][3] = True
-                            self.message_for_server['weapon'] = key
                             self.weapon_choice = key
 
                 for key in self.accuse_suspect_dict:
@@ -246,7 +246,6 @@ class Game_controller:
                         if (self.accuse_suspect_dict[key][2] == 'suspect') :
                             # print('Player choose suspect: ' + key)
                             self.accuse_suspect_dict[key][3] = True
-                            self.message_for_server['suspect'] = key
                             self.character_choice = key
 
                 for key in self.accuse_room_dict:
@@ -258,7 +257,6 @@ class Game_controller:
                         if (self.accuse_room_dict[key][2] == 'room') :
                             # print('Player choose room: ' + key)
                             self.accuse_room_dict[key][3] = True
-                            self.message_for_server['room'] = key
                             self.room_choice = key
                 # # Testing receive here
                 # turn_data = self.network.receive()
@@ -291,7 +289,7 @@ class Game_controller:
         
         # Initialize valid players 
         # TO DO: players should be added to screen later depending on which tokens are chosen (here for now to test)
-        self.board.load_player_tokens(self.screen, self.board)
+        self.token_coor_dict = self.board.load_player_tokens(self.screen, self.board, self.token_coor_dict)
 
         mousePos = pygame.mouse.get_pos()
         if is_Room_Selection_Active:
@@ -328,7 +326,6 @@ class Game_controller:
     ################################################################################
     def add_suggest_view(self, events):
         suggested_card_dict = {}
-        mousePos = pygame.mouse.get_pos()
         pygame.display.set_caption("Suggest Player : ")
         self.screen.fill(self.base_color)
         self.suggest_weapon_dict = self.board.get_weapon_directory()
@@ -357,7 +354,6 @@ class Game_controller:
                                     'weapon':self.weapon_choice}
                                     #'room': None}
             print("this is suggested card dict", suggested_card_dict)
-            # print(self.message_for_server)
 
             # turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
             #print(turn_data)
@@ -371,7 +367,6 @@ class Game_controller:
     ################################################################################
     def add_accuse_view(self, events):
         accused_card_dict = {}
-        mousePos = pygame.mouse.get_pos()
         pygame.display.set_caption("Accuse Player : ")
         self.screen.fill(self.base_color)
         self.accuse_weapon_dict = self.board.get_weapon_directory()
@@ -404,18 +399,82 @@ class Game_controller:
             # print(f"game_controller ... sending message to server for accusation: {accused_card_dict}")
             # game = self.network.send_receive(turn_data)
             # print(f"game_controller ... receiving message from server for accusation: {game}")
-            
-    def choose_player_token(self):
-        token = "None"
-        print("Please choose your character token")
-        print(CHARACTER_TOKENS)
-        token = input("Please enter you character choice: ")
-        while token not in CHARACTER_TOKENS:
-            token = input("Please enter a valid character choice: ")
 
-        print("You have chosen: " + token)
+    def get_font(self,size): # Returns Press-Start-2P in the desired size
+        data_folder = Path("clueless/data/font/")
+        return pygame.font.Font(data_folder / "font.ttf", size)
+    
+    def add_splash_screen(self, events):
+        data_folder = Path("clueless/data/graphics/")
+        mouse_pos = pygame.mouse.get_pos()
+        image = pygame.image.load(data_folder / "splash.png")
+        image = pygame.transform.scale(image, (self.WIDTH, self.HEIGHT))
+        self.screen.blit(image, (0, 0))
+
+        TITLE_TEXT = self.get_font(65).render("CLUE-LESS", True, "#b68f40")
+        TITLE_RECT = TITLE_TEXT.get_rect(center=(530, 100))
+        self.screen.blit(TITLE_TEXT, TITLE_RECT)
+
+        PLAY_BUTTON = Splash_Button(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(300, 450), 
+                            text_input="PLAY", font=self.get_font(30), base_color="#76EEC6", hovering_color="White")
+        QUIT_BUTTON = Splash_Button(image=pygame.image.load(data_folder / "Button_Image.png"), pos=(750, 450), 
+                            text_input="QUIT", font=self.get_font(30), base_color="#76EEC6", hovering_color="White")
+
+
+        for button in [PLAY_BUTTON, QUIT_BUTTON]:
+            button.changeColor(mouse_pos)
+            button.update(self.screen)
+
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if PLAY_BUTTON.checkForInput(mouse_pos):
+                    self.state = 'CHOOSING_TOKEN'
+                if QUIT_BUTTON.checkForInput(mouse_pos):
+                    pygame.quit()
+                    sys.exit()
+
+    def choose_player_token(self):
+        self.screen.fill(self.base_color)
+        mouse_pos = pygame.mouse.get_pos()
+
+        # Load view from board class
+        rectangle_dict = self.board.load_character_selection_board(self.screen)
         
-        return token
+        if self.player_token == "None":
+            for rect in rectangle_dict:
+                if (rectangle_dict[rect].collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0] == 1):
+                    self.highlighted_character_rect = rectangle_dict[rect]
+                    pygame.draw.rect(self.screen,"Red",rectangle_dict[rect],4)
+                    print("Player " + self.player_id + ' choose ' + rect)
+
+                    # send to server for player's token selection
+                    self.player_token = rect
+                    self.game_state['player_id'] = self.player_id
+                    self.game_state['player_token'] = self.player_token
+                    self.game_state['turn_status'] = "get"
+                    game_data = self.network.build_client_package(self.player_id, "join", self.player_token)
+                    self.network.send(game_data)
+
+                    self.state = 'START'
+
+        #token = "None"
+        # print("Please choose your character token")
+        # print(CHARACTER_TOKENS)
+        # token = input("Please enter you character choice: ")
+        # while token not in CHARACTER_TOKENS:
+        #     token = input("Please enter a valid character choice: ")
+
+        # print("You have chosen: " + token)
+        
+        #return "Professor Plum"
+
+    def move_token(self,token_name, pos_tuple):
+        print("MOVING ")
+        print(token_name)
+        print(pos_tuple[0])
+        print(pos_tuple[1])
+        self.token_coor_dict[token_name][1] = pos_tuple[0]
+        self.token_coor_dict[token_name][2] = pos_tuple[1]
 
 
     def render(self):

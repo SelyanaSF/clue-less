@@ -287,17 +287,20 @@ class Client_game_board:
         screen.blit(board.rope,self.weapon_dict["rope"][1])
         screen.blit(board.wrench,self.weapon_dict["wrench"][1])
 
-    def load_player_tokens(self, screen, board):
-        chosen_tokens = ['Professor Plum', 'Colonel Mustard','Miss Scarlet', 'Mr Green', 'Mrs White', 'Mrs Peacock'] # input param
-        
-        # Dictionary stores each token image file name, x location, and y location on the board
+    def load_player_tokens(self, screen, board, token_info):
+        chosen_tokens = ['Professor Plum', 'Colonel Mustard','Miss Scarlet', 'Mr. Green', 'Mrs. White', 'Mrs. Peacock'] # input param
+
         token_info_dict = {'Professor Plum':['prof_plum', 60, 210],
-                           'Mrs Peacock':['mrs_peacock', 60, 410],
-                           'Mr Green':['mr_green', 210, 550],
-                           'Mrs White':['mrs_white', 410, 550],
+                           'Mrs. Peacock':['mrs_peacock', 60, 410],
+                           'Mr. Green':['mr_green', 210, 550],
+                           'Mrs. White':['mrs_white', 410, 550],
                            'Miss Scarlet':['miss_scarlet', 410, 60],
                            'Colonel Mustard':['colonel_mustard', 560, 210]}
-         
+        # Dictionary stores each token image file name, x location, and y location on the board
+        # token_info none case will only happen when it is initialized at the first time. after the first movement, controller will NOT pass an empty dictionary
+        if bool(token_info):
+            token_info_dict = token_info
+
         # Initialize token positions for chosen tokens
         for token in chosen_tokens:
             token_surface = pygame.Surface((100, 100))
@@ -308,6 +311,53 @@ class Client_game_board:
             token_rect = (token_info_dict[token][1], token_info_dict[token][2], 100, 100)
             screen.blit(token_image, token_rect) 
             
+        return token_info_dict
+    
+    def get_font(self,size): # Returns Press-Start-2P in the desired size
+        data_folder = Path("clueless/data/font/")
+        return pygame.font.Font(data_folder / "font.ttf", size)
+    
+    def load_character_selection_board(self, screen):
+        # Load instruction
+        CHOOSE_CHARACTER = self.get_font(25).render("CHOOSE YOUR CHARACTER",True,"Red")
+        CHOOSE_CHARACTER_RECT = CHOOSE_CHARACTER.get_rect(center=(530, 80))
+
+        # Load character card
+        mrs_white = pygame.image.load(data_folder / 'mrs_white.png').convert_alpha()
+        mrs_peacock = pygame.image.load(data_folder / 'mrs_peacock.png').convert_alpha()
+        mr_green = pygame.image.load(data_folder / 'mr_green.png').convert_alpha()
+        miss_scarlet = pygame.image.load(data_folder / 'miss_scarlet.png').convert_alpha()
+        colonel_mustard = pygame.image.load(data_folder / 'colonel_mustard.png').convert_alpha()
+        prof_plum = pygame.image.load(data_folder / 'prof_plum.png').convert_alpha()
+
+        # Scale character card
+        colonel_mustard = pygame.transform.scale(colonel_mustard, (100, 120))
+        miss_scarlet = pygame.transform.scale(miss_scarlet, (100, 120))
+        mr_green = pygame.transform.scale(mr_green, (100, 120))
+        mrs_peacock = pygame.transform.scale(mrs_peacock, (100, 120))
+        mrs_white = pygame.transform.scale(mrs_white, (100, 120))
+        prof_plum = pygame.transform.scale(prof_plum, (100, 120))
+
+        # create character rectangle 
+        colonel_mustard_rect = colonel_mustard.get_rect(topleft=(140,190))
+        miss_scarlet_rect = miss_scarlet.get_rect(topleft=(460,190))
+        mr_green_rect = mr_green.get_rect(topleft=(790,190))
+        mrs_peacock_rect = mrs_peacock.get_rect(topleft=(140,380))
+        mrs_white_rect = mrs_white.get_rect(topleft=(460,380))
+        prof_plum_rect = prof_plum.get_rect(topleft=(790,380))
+
+        rectangle_dict = {'Colonel Mustard':colonel_mustard_rect, 'Miss Scarlet': miss_scarlet_rect,'Mr. Green': mr_green_rect,
+                        'Mrs. Peacock':mrs_peacock_rect,'Mrs. White':mrs_white_rect,'Professor Plum':prof_plum_rect}
+        
+        screen.blit(CHOOSE_CHARACTER, CHOOSE_CHARACTER_RECT)
+        screen.blit(colonel_mustard,colonel_mustard_rect)
+        screen.blit(miss_scarlet,miss_scarlet_rect)
+        screen.blit(mr_green,mr_green_rect)
+        screen.blit(mrs_peacock,mrs_peacock_rect)
+        screen.blit(mrs_white,mrs_white_rect)
+        screen.blit(prof_plum,prof_plum_rect)
+
+        return rectangle_dict
     
     def load_button(self, screen, text, buttonXPos, buttonYPos):
         button_color = (150, 150, 150)
