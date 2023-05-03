@@ -71,6 +71,9 @@ class Game_controller:
         self.game_state['player_token'] = self.player_token
         self.game_state['turn_status'] = "get"
 
+        input_tile_name = ''
+
+
         game_data = self.network.build_client_package(self.player_id, "join", self.player_token)
         self.network.send(game_data)
 
@@ -97,6 +100,7 @@ class Game_controller:
                     game = self.network.receive()
                 except Exception as err:
                     print("Couldn't receive server update")
+                    print(type(err))
                     print(err)
                     # break
                 # game = self.network.receive()
@@ -122,6 +126,32 @@ class Game_controller:
                             print("You win!")
                             self.board.display_update(self.screen, "You win!")
                     # elif  # print move stuff here
+                    elif (prev_game_state['player_id'] == self.player_id) and prev_game_state['turn_status'] == 'MOVING' and 'valid_tile_names_for_player' in prev_game_state:
+                        while input_tile_name not in prev_game_state.get('valid_tile_names_for_player'):
+                           input_tile_name = input("Please input a room from the list above: \n    ")
+                        
+                        print("    Success! Sending room selection to server...")
+
+                        # update game data
+                        game_data = self.network.build_client_package(self.player_id, 'MOVEMENT', input_tile_name)
+                        # print("game data is", game_data)
+
+                        # KT: take out this continue when ui is integrated, may cause 
+                        # errors when you do but needed for command line input rn since
+                        # it stops game_data from being overwritten at the end of the loop
+                        continue
+                    
+                    elif prev_game_state['turn_status'] == 'movement':
+                        print(f"Success! Player {prev_game_state['player_id']} has moved to {prev_game_state['player_location']}!")
+                        
+                        #game_data = self.network.build_client_package(self.player_id, 'get', self.player_token)
+
+                    elif (prev_game_state['player_id'] == self.player_id) and prev_game_state['turn_status'] == 'suggestion' and 'suggested_cards' in prev_game_state:
+                        print(f"Success! Player {prev_game_state['player_id']} (you) have suggested {prev_game_state['suggested_cards']}!")
+                        if 'suggest_result_player' in prev_game_state and prev_game_state['suggested_match_card'] != "No matched card found!":
+                            print(prev_game_state['suggest_result_player'], "has shown you:", prev_game_state['suggested_match_card'])
+                        else:
+                            print("No match found amongst other hands!")
                 except:
                     print("Couldn't process_server_update")
 
@@ -133,6 +163,7 @@ class Game_controller:
                 break
 
             events = pygame.event.get()
+            # print("events is", events)
             game_data = self.check_events(events)
             # print(f'game_data is now {game_data}')
             # print()
@@ -157,6 +188,9 @@ class Game_controller:
                 self.add_splash_screen(events)
 
             if (self.state == 'START'):
+                # print("check_events start")
+                # self.message_for_server = {}
+
                 self.room_choice = None
                 self.screen.fill(self.base_color)
                 turn_data = self.add_main_view(events)
@@ -166,6 +200,7 @@ class Game_controller:
                 self.choose_player_token()
 
             if (self.state == 'MOVING'): #'MOVEMENT'):
+                print("check_events moving")
                 turn_data = self.add_main_view(events)
                 self.board.highlight_tile_rect(self.screen,(0,100,0),'All')
                 for key in self.tiles_directory:
@@ -186,6 +221,7 @@ class Game_controller:
                         turn_data = self.network.build_client_package(self.player_id, self.state, self.room_choice)
                         self.move_token(self.player_token, self.tiles_directory[self.room_choice][1])
                         # self.network.send(turn_data)
+                        print(turn_data)
                         # print(f"sending message to server for movement: {self.player_id}, {self.state}, {self.room_choice}")
                         self.state = 'START'
 
@@ -296,9 +332,10 @@ class Game_controller:
             # self.state = "MOVEMENT"
             self.state = "MOVING"
             self.board.load_options(self.screen, self.state, events)
-            # print('Player chose to move')
+            print('Player chose to move')
             # This data stores the mouse position of the button
-            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            #turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            turn_data = self.network.build_client_package(self.player_id, self.state, self.player_token)
             self.network.send(turn_data)
 
         if is_Accuse_Selection_Active:
@@ -434,6 +471,14 @@ class Game_controller:
                     sys.exit()
 
     def choose_player_token(self):
+        # token = "None"
+        # print("Please choose your character token")
+        # print(CHARACTER_TOKENS)
+        # token = input("Please enter your character choice: ")
+        #while token not in CHARACTER_TOKENS:
+        #    token = input("Please enter a valid character choice: ")
+
+        # print("You have chosen: " + token)
         self.screen.fill(self.base_color)
         mouse_pos = pygame.mouse.get_pos()
 

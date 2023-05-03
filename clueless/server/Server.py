@@ -57,16 +57,24 @@ class Server:
                         player_turn = Game_message_handler.process_client_update(client_message)
 
                         #print("processed client message")
-                        if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "MOVING" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
+                        if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
 
                             if player_turn['turn_status'] == "join":
                                 # add new player to the game
                                 self.game.add_player(player_turn['player_id'], player_turn['player_token'])
                                 player = self.game.get_player_object(player_turn['player_id'])
+                                print(player)
                                 print("Added new player to the game: Player "+ player.get_player_id() + " is playing " + player.get_player_name())
                                 print()
 
-                                if (self.id_count == self.max_players and not self.game.dealt):
+                                print("self.max_players:", self.max_players)
+                                print("self.id_count:", self.id_count)
+
+                                # KT: changed this to check the length of players in Game, which is only added to
+                                # AFTER all players have selected their player tokens; was seeing errors where deck 
+                                # was dealt when three clients were initialized but only the first player was 
+                                # getting dealt cards
+                                if (len(self.game.players) == self.max_players and not self.game.dealt):
                                     print("All players have joined the game")
                                     print("dealing cards to players")
                                     print()
@@ -78,10 +86,32 @@ class Server:
                                 player_turn['turn_status'] = "get"
                                 server_update = Game_message_handler.build_game_package(player_turn)
 
+                            elif player_turn['turn_status'] == "MOVING":
+                                # function for getting valid moves goes here
+                                # when player clicks "Go To Room", room selection becomes active in the 
+                                # client; client gets sent a list of names of valid tiles to move to
+                                player = self.game.get_player_object(player_turn['player_id'])
+                                valid_tile_names_for_player = Game_processor.get_valid_moves(self.game.game_board, player)
+                                print("Tiles to send to client", valid_tile_names_for_player)
+                                print("player_turn is", player_turn)
+                                game_status = dict({
+                                    'player_id': player.get_player_id(),
+                                    # 'player_token': player_turn['player_token'],
+                                    'turn_status': player_turn['turn_status'],
+                                    'valid_tile_names_for_player': valid_tile_names_for_player
+                                })
+                                # print("game_status", game_status)
+                                server_update = Game_message_handler.build_game_package(game_status)
+                                # print("server update is", server_update)
+
+                                # pass
+
                             elif player_turn['turn_status'] != "get":
+                                # print("got to server!")
                                 game_status = self.game.player_take_turn(player_turn)
                                 #print(game_status)
                                 server_update = Game_message_handler.build_game_package(game_status)
+
                             else:
                                 server_update = player_turn
 
@@ -104,7 +134,8 @@ class Server:
                     break
                 # print("... sent server update to client")
                 # print()
-            except:
+            except Exception as err:
+                print(err)
                 break
 
         print("Lost connection")

@@ -47,6 +47,8 @@ class Deck:
         for i, key in enumerate(game_deck_keys):
             dealt_deck= dealt_decks[i % num_dicts]
             dealt_deck[key]= game_deck[key]
+        
+            # print("dealt_deck is", dealt_deck)
         return dealt_decks # returns a list of decks in the form of dictionaries
      
 
