@@ -10,6 +10,7 @@ class Player:
         self.player_status = 'ACTIVE'                           # Enum (int)
         # TO DO initialize dict from all tokens, weapons, room : 'unknown'
         self.player_notebook = dict()                             # Dict
+        self.next_player = None                                 #int id of next player
 
     ''' GETTER FUNCTIONS '''
     # Returns the player's name
@@ -43,6 +44,9 @@ class Player:
     # Returns the player's old location
     def get_player_current_location(self):
         return self.player_current_location    
+    
+    def get_next_player(self):
+        return self.next_player
       
     def set_player_hand(self, player_hand):
         self.player_hand= player_hand
@@ -60,3 +64,6 @@ class Player:
     # Update the player's turn status
     def set_player_status(self, TURN_STATUS):
         self.turn_status = TURN_STATUS
+
+    def set_next_player(self, player):
+        self.next_player = player

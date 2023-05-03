@@ -66,6 +66,7 @@ class Game_controller:
     def game_loop(self):
 
         prev_game_state = DEFAULT_GAME
+        prev_game_data = DEFAULT_GAME
         print("You are Player ", self.id)
         self.game_state['player_id'] = self.player_id
         self.game_state['player_token'] = self.player_token
@@ -86,15 +87,10 @@ class Game_controller:
                 current_time = datetime.now() 
                 # print("....current Time =", current_time)
                 
-                # game = self.network.send_receive(game_data)
-                # print("...sent and received client message")
-                
-                #self.network.send(game_data)
-                # print("...sent client message")
-                #game_data = self.network.build_client_package(self.player_id, "get", '')
-                #game = self.network.send_receive(game_data)
+                #if game_data != prev_game_data:
                 self.network.send(game_data)
                 # print("...sent client message")
+                #  prev_game_data = game_data
 
                 try:
                     game = self.network.receive()
@@ -111,6 +107,12 @@ class Game_controller:
                 #     print(f"... received from different player { game['player_id']}")   
                 try:
                     prev_game_state = self.network.process_server_update(game, prev_game_state)
+                    
+                    # try: 
+                    #     self.update_views(prev_game_state)
+                    # except Exception as err:
+                    #     print(err)   
+                    
                     # print(f'server update: {prev_game_state} ')   
                     # TO DO read prev_game_state and display messages to corresponding players
                     if prev_game_state['turn_status']=='accusation':
@@ -157,7 +159,6 @@ class Game_controller:
                             print("No match found amongst other hands!")
                 except:
                     print("Couldn't process_server_update")
-
                     break
 
             except:
@@ -357,6 +358,12 @@ class Game_controller:
             self.network.send(turn_data)
 
         # if player chooose end turn, then it passes the turn to others.
+        if isEndTurnSelectionActive:
+            self.state = "END TURN"
+            self.board.load_options(self.screen, self.state, events)
+            turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos))
+            #print(turn_data)
+            self.network.send(turn_data)
 
         return turn_data
 
@@ -439,6 +446,46 @@ class Game_controller:
             # print(f"game_controller ... sending message to server for accusation: {accused_card_dict}")
             # game = self.network.send_receive(turn_data)
             # print(f"game_controller ... receiving message from server for accusation: {game}")
+        
+    ################################################################################
+    # add_win_view is the function to show win view
+    # Input : winner [type: Boolean], winner_player_id [type: int],  case_file [type: dict]
+    ################################################################################
+    def add_win_view(self, winner, winner_player_id, case_file):
+        # pygame.display.set_caption("Player : ")
+        self.screen.fill(self.base_color)
+        readable_character = Client_message_handler.get_readable_playername(case_file['character'])
+        readable_weapon = Client_message_handler.get_readable_weaponname(case_file['weapon'])
+        readable_room = Client_message_handler.get_readable_tilename(case_file['room'])
+        self.board.load_win_board(self.screen, self.board, winner, winner_player_id, readable_character, readable_weapon, readable_room)
+    
+    ################################################################################
+    # update_views is the function to read the processed game state and update views correspondingly
+    # Input : prev_game_state [type: dict]
+    ################################################################################
+    def update_views(self, prev_game_state):
+        # Suggestion finished
+        
+        # Move finished
+        
+        # Accusation finished
+        if prev_game_state['turn_status']=='accusation':
+            this_player_id = prev_game_state['player_id']
+            if 'accused_result_player' not in prev_game_state:
+                if this_player_id == self.player_id:
+                    print("You Lost!")
+                    self.board.display_update(self.screen, "Sorry, You Lost!")
+                else:
+                    print(f"Player {this_player_id} Lost!")
+                    self.board.display_update(self.screen, f"Player {this_player_id} Lost!")
+            else: 
+                if this_player_id == self.player_id:
+                    self.add_win_view(winner=True, winner_player_id=this_player_id, case_file=prev_game_state['accused_cards'])
+                    print("You Won!")
+                else:
+                    self.add_win_view(winner=False, winner_player_id=this_player_id, case_file=prev_game_state['accused_cards'])
+                    print(f"Player {this_player_id} Won!")
+ 
 
     def get_font(self,size): # Returns Press-Start-2P in the desired size
         data_folder = Path("clueless/data/font/")

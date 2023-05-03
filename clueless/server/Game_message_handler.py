@@ -9,8 +9,9 @@ class Game_message_handler:
         pass
 
     def send_game_update(conn, game_update):
-        # print(f"... sending to client {game_update}")
-        conn.send(pickle.dumps(game_update))
+        #if game_update['turn_status'] != 'pass':
+            # print(f"... sending to client {game_update}")
+            conn.send(pickle.dumps(game_update))
 
     def receive_client_update(conn):
         client_update = pickle.loads(conn.recv(4096*10))
@@ -42,6 +43,12 @@ class Game_message_handler:
                 player_turn.update({'accused_cards': client_message['accused_cards']})
             elif turn_status == "chose_token": #join
                 player_turn.update({'player_token': client_message['player_token']})
+            elif turn_status == 'start game':
+                player_turn['turn_status'] = 'get'
+            elif turn_status == 'END TURN':
+                player_turn.update({'turn_status': 'end turn'})
+        else:
+            player_turn['turn_status'] = 'pass'
 
         # print(f'...processed player_turn {player_turn}')
         return player_turn
@@ -76,13 +83,20 @@ class Game_message_handler:
                 game_package.update({'accused_cards': game_status['accused_cards']})
                 if 'accused_result_player' in game_status:
                     game_package.update({'accused_result_player': game_status['accused_result_player']})
+            elif turn_status == 'end turn':
+                game_package.update({'next_player': game_status['next_player']})
+            elif turn_status == 'start game':
+                game_package.update({'next_player': game_status['next_player']})
+        else:
+            game_package.update({'turn_status': 'pass'})
+        
 
-        print(f'...built message package for client{game_package}')
+        #print(f'...built message package for client{game_package}')
         return game_package
 
     def broadcast(clients, message):
-        # print(f'...broadcasting {message} to this many clients: {len(clients)}')
-        
+        #print(f'...broadcasting {message} to this many clients: {len(clients)}')
+
         # client is same as conn
         for client in clients:
             try: 

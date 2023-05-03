@@ -21,9 +21,6 @@ class Server:
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.id_count = 0
         self.max_players = PLAYER_MAX
-        #hardcoding as a placeholder
-        #self.game = Game(player_info_dict, 3)
-        #self.game = Game([],3)'
         self.clients = []
 
         try:
@@ -44,7 +41,7 @@ class Server:
 
         while connected:
             try:
-                #print("Server receiving player data")'
+                #print("Server receiving player data")
                 client_message = Game_message_handler.receive_client_update(conn)
                 #print("Server received player data")
     
@@ -54,35 +51,19 @@ class Server:
                     break
                 else:
                     if client_message != prev_client_message:
+                        #print(f"previous client message: {prev_client_message} ... current client message: {client_message}")
                         player_turn = Game_message_handler.process_client_update(client_message)
-
                         #print("processed client message")
-                        if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
 
+                        #if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
+                        if player_turn['turn_status'] != 'pass':
                             if player_turn['turn_status'] == "chose_token":
                                 # add new player to the game
-                                self.game.add_player(player_turn['player_id'], player_turn['player_token'])
-                                player = self.game.get_player_object(player_turn['player_id'])
-                                print(f'!!! {player.get_player_name()}')
-                                print("Added new player to the game: Player "+ player.get_player_id() + " is playing " + player.get_player_name())
-                                print()
-
-                                print("self.max_players:", self.max_players)
-                                print("self.id_count:", self.id_count)
-
-                                # KT: changed this to check the length of players in Game, which is only added to
-                                # AFTER all players have selected their player tokens; was seeing errors where deck 
-                                # was dealt when three clients were initialized but only the first player was 
-                                # getting dealt cards
-                                if (len(self.game.players) == self.max_players and not self.game.dealt):
-                                    print("All players have joined the game")
-                                    print("dealing cards to players")
-                                    print()
-                                    self.game.deal_to_players()
-                                    self.game.dealt = True
-                                    print("Let's start the game!")
-                                    print()
-
+                                player_turn = self.add_new_player(player_turn)
+                                server_update = Game_message_handler.build_game_package(player_turn)
+                                #print("self.max_players:", self.max_players)
+                                #print("self.id_count:", self.id_count)
+                                
                                 player_turn['turn_status'] = "get"
                                 server_update = Game_message_handler.build_game_package(player_turn)
 
@@ -106,7 +87,7 @@ class Server:
 
                                 # pass
 
-                            elif player_turn['turn_status'] != "get":
+                            elif player_turn['turn_status'] != "get" and player_turn['turn_status'] != "start game":
                                 # print("got to server!")
                                 game_status = self.game.player_take_turn(player_turn)
                                 #print(game_status)
@@ -178,6 +159,7 @@ class Server:
                 conn, addr = self.server.accept()
                 self.clients.append(conn)
                 print("Connected to:", addr)
+                
                 game_status['player_count'] = id_count+1
 
                 #open new thread for new client server connection to run on
@@ -189,3 +171,30 @@ class Server:
                 print("Waiting for all players to join...")
                 print()
 
+
+    def add_new_player(self, player_turn):
+        self.game.add_player(player_turn['player_id'], player_turn['player_token'])
+        player = self.game.get_player_object(player_turn['player_id'])
+        print("Added new player to the game: Player "+ player.get_player_id() + " is playing " + player.get_player_name())
+        print()
+
+        player_turn['turn_status'] = "get"
+        
+        # KT: changed this to check the length of players in Game, which is only added to
+        # AFTER all players have selected their player tokens; was seeing errors where deck 
+        # was dealt when three clients were initialized but only the first player was 
+        # getting dealt cards
+
+        if (len(self.game.players) == self.max_players and not self.game.dealt):
+            print("All players have joined the game")
+            print("dealing cards to players")
+            print()
+            self.game.deal_to_players()
+            self.game.dealt = True
+            self.game.set_turn_order()
+            print("Let's start the game!")
+            print()
+            player_turn['turn_status'] = "start game"
+            player_turn['next_player'] = self.game.get_first_player()
+
+        return player_turn
