@@ -9,8 +9,10 @@ from clueless.server.Game_processor import *
 
 HOST_ADDR = socket.gethostbyname(socket.gethostname())
 HOST_PORT = 8080
-DEFAULT_TURN = dict({'header': 'None', 'player_id': 'None', 'data': ''})
-DEFAULT_GAME = dict({'player_count': 0, 'player_token': '0', 'turn_status': ''})
+# DEFAULT_TURN = dict({'header': 'None', 'player_id': 'None', 'data': ''})
+DEFAULT_TURN = dict({'header': 'None', 'player_id': 'None', 'data': '', 'next_player': '', 'next_playername_turn':''})
+# DEFAULT_GAME = dict({'player_count': 0, 'player_token': '0', 'turn_status': ''})
+DEFAULT_GAME = dict({'player_count': 0, 'player_token': '0', 'turn_status': '', 'next_player': '', 'next_playername_turn':''})
 PLAYER_MAX = 6
 PLAYER_MIN = 3
 SKIP = 'skip'
@@ -51,16 +53,19 @@ class Server:
                     break
                 else:
                     if client_message != prev_client_message:
-                        #print(f"previous client message: {prev_client_message} ... current client message: {client_message}")
+                        # print(f"previous client message: {prev_client_message} ... current client message: {client_message}")
                         player_turn = Game_message_handler.process_client_update(client_message)
-                        #print("processed client message")
-
+                        
                         #if player_turn['turn_status'] != "get" and player_turn['turn_status'] != "ACCUSING" and player_turn['turn_status'] != "SUGGESTING":
                         if player_turn['turn_status'] != 'pass':
                             if player_turn['turn_status'] == "chose_token":
                                 # add new player to the game
-                                player_turn = self.add_new_player(player_turn)
+                                player_turn = self.add_new_player(player_turn) 
                                 server_update = Game_message_handler.build_game_package(player_turn)
+                                
+                                if server_update['turn_status'] == 'start game':
+                                    print(f'NOW STARTING GAME {server_update}') # ex:{'player_id': '3', 'turn_status': 'start game', 'next_player': '1'}
+                                    Game_message_handler.broadcast(self.clients, server_update)
                                 #print("self.max_players:", self.max_players)
                                 #print("self.id_count:", self.id_count)
                                 
@@ -72,6 +77,8 @@ class Server:
                                 # when player clicks "Go To Room", room selection becomes active in the 
                                 # client; client gets sent a list of names of valid tiles to move to
                                 player = self.game.get_player_object(player_turn['player_id'])
+                                print(f'player_turn {player_turn}')
+                                print(player)
                                 valid_tile_names_for_player = Game_processor.get_valid_moves(self.game.game_board, player)
                                 print("Tiles to send to client", valid_tile_names_for_player)
                                 print("player_turn is", player_turn)
@@ -79,7 +86,8 @@ class Server:
                                     'player_id': player.get_player_id(),
                                     # 'player_token': player_turn['player_token'],
                                     'turn_status': player_turn['turn_status'],
-                                    'valid_tile_names_for_player': valid_tile_names_for_player
+                                    'valid_tile_names_for_player': valid_tile_names_for_player,
+                                    'next_player': '', 'next_playername_turn':''
                                 })
                                 # print("game_status", game_status)
                                 server_update = Game_message_handler.build_game_package(game_status)
@@ -88,9 +96,10 @@ class Server:
                                 # pass
 
                             elif player_turn['turn_status'] != "get" and player_turn['turn_status'] != "start game":
-                                # print("got to server!")
+                                print(f"got to server with turn_status {player_turn['turn_status']}")
+                                
                                 game_status = self.game.player_take_turn(player_turn)
-                                #print(game_status)
+                                print(f"finished turn, game_status is now {game_status}")
                                 server_update = Game_message_handler.build_game_package(game_status)
 
                             else:
@@ -111,12 +120,12 @@ class Server:
                     # index = self.clients.index(conn)
                     # self.clients.remove(conn)
                     # conn.close()
-                    # print(err)
+                    print(f" failed broadcast with error: {err}")
                     break
                 # print("... sent server update to client")
                 # print()
             except Exception as err:
-                # print(err)
+                print(f" failed Game_message_handler.receive_client_update() with error: {err}")
                 break
 
         print("Lost connection")
@@ -195,6 +204,11 @@ class Server:
             print("Let's start the game!")
             print()
             player_turn['turn_status'] = "start game"
-            player_turn['next_player'] = self.game.get_first_player()
+            first_player_id_str = self.game.get_first_player()
+            player_turn['next_player'] = first_player_id_str
+            # Adding string name of the first player
+            first_player_obj = self.game.get_player_object(first_player_id_str)
+            first_player_name = first_player_obj.get_player_name()
+            player_turn['next_playername_turn'] = first_player_name
 
         return player_turn

@@ -286,19 +286,6 @@ class Client_game_board:
         screen.blit(board.revolver,self.weapon_dict["revolver"][1])
         screen.blit(board.rope,self.weapon_dict["rope"][1])
         screen.blit(board.wrench,self.weapon_dict["wrench"][1])
-        
-    def load_win_board(self, screen, board, winner, winner_player_id, readable_character, readable_weapon, readable_room):
-        my_font = pygame.font.SysFont(None, 30)
-        text = f'Sorry, Player {winner_player_id} won.'
-        if winner:
-            text = 'Congrats! You Win!!'
-        text_surface = my_font.render(text, False, (0, 0, 0))
-        screen.blit(text_surface, (100,300))
-        
-        case_file_text = f"Secret file was {readable_character} with the {readable_weapon} in the {readable_room} "
-        # case_file_text = f"Secret file was {case_file['character']} with the {case_file['weapon']} in the {case_file['room']} "
-        text_surface = my_font.render(case_file_text, False, (0, 0, 0))
-        screen.blit(text_surface, (100,400))
 
     def load_player_tokens(self, screen, board, token_info):
         chosen_tokens = ['Professor Plum', 'Colonel Mustard','Miss Scarlet', 'Mr. Green', 'Mrs. White', 'Mrs. Peacock'] # input param
@@ -425,7 +412,13 @@ class Client_game_board:
         if (card_type == 'room'):
             pygame.draw.rect(screen,color,self.room_dict[key_name][0],2)
 
-    def display_update(self, screen, text):
-        my_font = pygame.font.SysFont(None, 30)
-        text_surface = my_font.render(text, False, (0, 0, 0))
-        screen.blit(text_surface, (100, 30))
+    def display_update(self, screen, text, coords):
+        board_surface = pygame.Surface((700,50))
+        board_surface.fill('bisque3')
+        screen.blit(board_surface,(0,0))
+        TEXT = self.get_font(15).render(text, True, "#000000")
+        RECT = TEXT.get_rect(center=coords)
+        screen.blit(TEXT, RECT)  
+        # my_font = pygame.font.SysFont(None, 30)
+        # text_surface = my_font.render(text, False, (0, 0, 0))
+        # screen.blit(text_surface, coords)

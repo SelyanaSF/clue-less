@@ -56,25 +56,32 @@ class Game_processor:
         else:
             
             # get adjacent tiles for that tile
-            temp_adjacent_tiles = board_dict.get(player.get_player_current_location()).get_adjacent_tiles()
-
-            valid_tile_names.append(player.get_player_current_location().get_tile_name())
+            # board_dict {'Hallway XX': tile obj}
+            current_tilename_str = player.get_player_current_location().get_tile_name()
+            # print(current_tilename_str, type(current_tilename_str))    
+            
+            # temp_adjacent_tiles is a list of strings
+            temp_adjacent_tiles = board_dict.get(current_tilename_str).get_adjacent_tiles()
+            print(temp_adjacent_tiles, type(temp_adjacent_tiles))    
+            
+            valid_tile_names.append(current_tilename_str)
 
             # check if the player is allowed to move there
             for tile in temp_adjacent_tiles:
             # if NO ONE is on the tile, then automatically valid move (adj and empty); append to valid tiles
             #   else if the tile type is ROOM and there are 1 or more players on it, this is also valid, append
             # all other cases are INVALID (1 player and HALLWAY is invalid, hallway is considered full)
-
+            
+                # tile is a string
                 if board_dict.get(tile).get_tile_num_players() == 0:
-                    valid_tile_names.append(tile.get_tile_name())
+                    valid_tile_names.append(tile) #.get_tile_name())
 
                 elif board_dict.get(tile).get_tile_num_players() >= 1 and board_dict.get(tile).get_tile_type() == "room":
-                    valid_tile_names.append(tile.get_tile_name())
-        
+                    valid_tile_names.append(tile) #.get_tile_name())
         # may need to convert to frontend names
         return valid_tile_names
 
+    # destination: tile object
     def move(board_dict, player, destination):
         # get backend tile name
 

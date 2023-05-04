@@ -33,7 +33,7 @@ class Client_message_handler:
             pass
 
     def send_receive(self, data):
-        print("Player sending information to the Server")
+        # print("Player sending information to the Server")
         #print(data)
         try:
             # print('...sending client -> server data
@@ -47,13 +47,13 @@ class Client_message_handler:
             pass
 
     def send(self, data):
-        # print(f"Player sending information to the Server {data}") 
+        # print(f"... Player sending information to the Server {data}") 
         if data:
             dic1 = pickle.dumps(data)
             try:
                 self.client.send(dic1)
             except socket.error as err:
-                print(err)
+                print(f'failed to send with error {err}')
                 pass
 
     def receive(self):
@@ -63,11 +63,15 @@ class Client_message_handler:
         #     print(f"...client receiving update from server {server_update}")
         return server_update     
 
-    def build_client_package(self, player_id, state, contents):
+    def build_client_package(self, player_id, state, contents, next_player, next_playername_turn):
         #start builing message package to send to server
-        print("...building client package")
-        print(f'   for player {player_id}, {state}, {contents}')
-        client_package = dict({'player_id': player_id, 'turn_status': state})
+        # print("...building client package")
+        # print(f'   for player {player_id}, {state}, {contents}')
+        client_package = dict({'player_id': player_id, 
+                               'turn_status': state,
+                               'next_player': '', 
+                               'next_playername_turn':''
+                               })
 
         if (state == 'MOVEMENT'):
             client_package.update({'target_tile': contents})
@@ -81,25 +85,27 @@ class Client_message_handler:
         elif (state == 'chose_token'): # join
             client_package.update({'player_token': contents})
         elif (state == "END TURN"):
-            pass
+            # pass
+            print(f'... built client package {client_package}')
+            return client_package
             
         return client_package
     
     def get_server_update(self):
-        print("check get server update")
+        # print("check get server update")
         game_data = self.build_client_package(self.id, "get", "")
         game = self.send_receive(game_data)
         return game
 
     # TO DO: move and suggest
     def process_server_update(self, server_message, prev_server_message):
-        #print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
+        # print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
         player_id = server_message['player_id']
         # player_token = server_message['player_token']
         turn_status = server_message['turn_status']
         
         if server_message != prev_server_message:
-            #print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
+            # print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
             if turn_status != "get" and turn_status != 'pass':
                 if not self.player_taking_turn:
                     print("Player taking turn: ", player_id)
@@ -140,6 +146,7 @@ class Client_message_handler:
                         #     print("...accusation incorrect. Player " + player_id + " loses.")
                         self.player_accused = True
                 elif turn_status == 'end turn':
+                    print('... in Client_msg_handler')
                     if not self.player_ended_turn:
                         next_player_id = server_message['next_player']
                         print("Player " + player_id + "'s turn ended.")
@@ -162,6 +169,9 @@ class Client_message_handler:
                         print("Player " + server_message['next_player'] + " starts")
                         print()
                         self.game_has_started = True
+                        
+                elif turn_status == 'START':
+                    print(server_message)
                 else:
                     server_message['turn_status'] = 'pass'
 

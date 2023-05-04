@@ -12,27 +12,11 @@ class Game:
         self.num_players = num_players
         self.players = []
         self.dealt = False
-        # self.player_info_dict = {1:'Colonal Mustard',
-        #                         2:'Miss Scarlet',
-        #                         3:'Professor Plum'}
-
-
-        # for player_id, player_name in player_info_dict.items():
-        #     this_player = Player(player_name, player_id)
-        #     self.players.append(this_player)
         self.game_deck = Deck()                                 # dict for initial overall game deck
         self.case_file = self.game_deck.get_secret_deck()       # dict of three secret cards
-        
-        # Below needs ALL player objects initialized
-
-        #self.deal_to_players()
-        # self.turn_state = None                                # turn state for current player
         self.game_status = None                                 # game state of entire game
         print(f'  case_file: {self.case_file}')
-        # print('   with players')
-        # for p in self.players:
-        #     print(f'       {p.get_player_name()}, {p.get_player_id()}, {p.get_hand()}')
-        
+
         ############################
         ##### INITIALIZE TILES #####
         # to initialize an object of class tile
@@ -237,6 +221,8 @@ class Game:
         INPUT: player_turn : dictionary from Game_message_handler.process_client_update(client_message)
             {'player_id': str,
             'turn_status': str,                                 # movement, accusation, or suggestion
+            'next_player': str,
+            'next_playername_turn': str,
             'suggested_cards': dict,                            # client_message['suggested_cards']
             'accused_cards': dict,
             'target_tile': str
@@ -250,7 +236,8 @@ class Game:
             'suggest_result_player': str,         # Name of player who provided suggested cards, None if no matching cards were found
             'accused_cards': dict,
             'accused_result_player' : str,        # Name of player who accused correctly, None accused incorrectly
-            'target_tile': str
+            'target_tile': str,
+            'moved_player':str                    # string name of player who moved
             } 
         '''
         # Get player object
@@ -261,7 +248,8 @@ class Game:
         
         # Execute specific turn and update corresponding game_status with result
         if player_turn['turn_status'] == "movement":
-            
+            print('in player_take_turn movement')
+            game_status['moved_player'] = curr_player.get_player_name()
             # backend_tilename = self.get_backend_tilename(player_turn['target_tile'])
             # target_tile_obj = self.game_board[backend_tilename]
             # print(f"  Player {curr_player.get_player_name()} chooses to move to location {target_tile_obj.get_tile_name()}")
@@ -360,24 +348,17 @@ class Game:
             else: 
                 game_status['suggest_result_player'] = player_w_match
                 game_status['suggested_match_card'] = matched_card
-            # print("matched_card is:", matched_card)
-            # if matched_card != "No matched card found!":
-            # else:
-            #     game_status['suggested_match_card']= str(matched_card)
-        # #     # print('  Player chooses to suggest')
-        #     player_w_match, matched_card = Game_processor.suggest(curr_player.get_player_name(), player_turn['accused_cards']['weapon'], player_turn['accused_cards']['room'], player_turn['accused_cards']['character'])
-        #     # TO DO: assumes output of suggest has name of player who suggested cards
-        #     game_status['suggest_result_player'] = player_w_match
-        #     game_status['suggested_match_card']= matched_card
         
         #when current player has submitted that they want to end their turn
         elif player_turn['turn_status'] == 'end turn':
             print("Player " + curr_player.get_player_id() + " is ending their turn.")
             print("Player " + curr_player.get_next_player() + " is starting their turn next.")
-            game_status.update({'next_player_turn': curr_player.get_next_player()})
+            game_status.update({'next_player': curr_player.get_next_player()})
+            next_player_obj = self.get_player_object(curr_player.get_next_player())
+            game_status.update({'next_playername_turn': next_player_obj.get_player_name()})
 
         # print(f'... return game_status {game_status}')
-        game_status['ready']=True
+        # game_status['ready']=True
         return game_status # --goes to--> server_update = Game_message_handler.build_game_package(game_status)
 
 # Khue Test Statements for Move

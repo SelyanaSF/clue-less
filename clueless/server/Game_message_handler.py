@@ -7,7 +7,7 @@ class Game_message_handler:
 
     def __init__(self):
         pass
-
+     
     def send_game_update(conn, game_update):
         #if game_update['turn_status'] != 'pass':
             # print(f"... sending to client {game_update}")
@@ -22,7 +22,11 @@ class Game_message_handler:
         # print(f"...processing client message {client_message}")
         turn_status = client_message['turn_status']
         #starting with client turn status form bc og the get condition
-        player_turn = dict({'player_id': client_message['player_id'], 'turn_status': turn_status})
+        player_turn = dict({'player_id': client_message['player_id'], 
+                            'turn_status': turn_status,
+                            'next_player': client_message['next_player'],
+                            'next_playername_turn': client_message['next_playername_turn']
+                            })
 
         if turn_status == "reset":
             pass        
@@ -56,10 +60,34 @@ class Game_message_handler:
 
     def build_game_package(game_status):
         # print("...building message package for client")
+        tilename_dict = {'Study':'study_room',
+                         'Hall':'hall',
+                         'Lounge':'lounge',
+                         'Library':'library',
+                         'Billiard Room':'billiard_room',
+                         'Dining Room':'dining_room',
+                         'Conservatory':'conservatory',
+                         'Ballroom':'ballroom',
+                         'Kitchen':'kitchen',
+                         'Hallway 01':'hallway_1',
+                         'Hallway 02':'hallway_2',
+                         'Hallway 03':'hallway_3',
+                         'Hallway 04':'hallway_4',
+                         'Hallway 05':'hallway_5',
+                         'Hallway 06':'hallway_6',
+                         'Hallway 07':'hallway_7',
+                         'Hallway 08':'hallway_8',
+                         'Hallway 09':'hallway_9',
+                         'Hallway 10':'hallway_10',
+                         'Hallway 11':'hallway_11',
+                         'Hallway 12':'hallway_12'}
+        
         game_package = dict({
             'player_id': game_status['player_id'],
             # 'player_token': game_status['player_token'],
-            'turn_status': game_status['turn_status']
+            'turn_status': game_status['turn_status'],
+            'next_player': game_status['next_player'],
+            'next_playername_turn': game_status['next_playername_turn']
         })
 
         turn_status = game_package['turn_status']
@@ -67,10 +95,14 @@ class Game_message_handler:
         #based on game status, build a package for the game status message
         if turn_status != "get":
             if turn_status == 'movement':
-                game_package.update({'player_location': game_status['target_tile']})
+                frontend_tilename = tilename_dict[(game_status['target_tile'])]
+                game_package.update({'player_location': frontend_tilename})
+                # game_package.update({'player_location': game_status['target_tile']})
+                game_package.update({'moved_player': game_status['moved_player']})
                 print(game_package)
             elif turn_status == 'MOVING':
                 game_package.update({'valid_tile_names_for_player': game_status['valid_tile_names_for_player']})
+                
             elif turn_status == 'suggestion':
                 game_package.update({'suggested_cards': game_status['suggested_cards']})
                 # game_package.update({'suggest_result': game_status['suggest_result']})
@@ -79,14 +111,23 @@ class Game_message_handler:
                 # game_package.update({'suggested_player_location': game_status['suggested_cards']['room']})
                 if 'suggested_match_card' in game_status:
                     game_package.update({'suggested_match_card': game_status['suggested_match_card']})
+                    
             elif turn_status == 'accusation':
                 game_package.update({'accused_cards': game_status['accused_cards']})
                 if 'accused_result_player' in game_status:
                     game_package.update({'accused_result_player': game_status['accused_result_player']})
+                    
             elif turn_status == 'end turn':
                 game_package.update({'next_player': game_status['next_player']})
+                game_package.update({'next_playername_turn': game_status['next_playername_turn']})
+                
             elif turn_status == 'start game':
                 game_package.update({'next_player': game_status['next_player']})
+                game_package.update({'next_playername_turn': game_status['next_playername_turn']})
+                        
+            elif turn_status == 'chose token':
+                game_package.update({'next_player': game_status['next_player']})
+                
         else:
             game_package.update({'turn_status': 'pass'})
         
@@ -102,6 +143,5 @@ class Game_message_handler:
             try: 
                 Game_message_handler.send_game_update(client, message)
             except Exception as err:
-                # print(err)
-                hold = ''
-            # client.send(message)
+                # print(f'failed broadcast with error {err}')
+                pass
