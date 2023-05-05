@@ -397,12 +397,10 @@ class Client_game_board:
     def get_room_directory(self) :
         return self.room_dict
     
-    def highlight_tile_rect(self, screen, color, tile_name):
-        if (tile_name == 'All'):
-            for key in self.tile_rect_dict:
-                pygame.draw.rect(screen,color,self.tile_rect_dict[key][0],2)
-        else:
-            pygame.draw.rect(screen,color,self.tile_rect_dict[tile_name][0],2)
+    def highlight_tile_rect(self, screen, color, tile_array):
+        for key in tile_array:
+            pygame.draw.rect(screen,color,self.tile_rect_dict[key][0],4)
+
 
     def highlight_rect(self, screen, color, card_type, key_name):
         if (card_type == 'weapon'):

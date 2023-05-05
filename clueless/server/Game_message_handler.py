@@ -11,7 +11,8 @@ class Game_message_handler:
     def send_game_update(conn, game_update):
         #if game_update['turn_status'] != 'pass':
             # print(f"... sending to client {game_update}")
-            conn.send(pickle.dumps(game_update))
+        # indenting was wrong after if statement was moved
+        conn.send(pickle.dumps(game_update))
 
     def receive_client_update(conn):
         client_update = pickle.loads(conn.recv(4096*10))
@@ -19,7 +20,7 @@ class Game_message_handler:
         return client_update
 
     def process_client_update(client_message):
-        # print(f"...processing client message {client_message}")
+        print(f"...processing client message {client_message}")
         turn_status = client_message['turn_status']
         #starting with client turn status form bc og the get condition
         player_turn = dict({'player_id': client_message['player_id'], 
@@ -136,12 +137,14 @@ class Game_message_handler:
         return game_package
 
     def broadcast(clients, message):
-        #print(f'...broadcasting {message} to this many clients: {len(clients)}')
+        # print(f'...broadcasting {message} to this many clients: {len(clients)}')
 
         # client is same as conn
         for client in clients:
+            # if message["turn_status"] == "MOVING":
+            #     print(f"i am client {client}")
             try: 
                 Game_message_handler.send_game_update(client, message)
             except Exception as err:
-                # print(f'failed broadcast with error {err}')
-                pass
+                print(f'failed broadcast with error {err}')
+                # pass

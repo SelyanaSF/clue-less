@@ -71,7 +71,7 @@ class Game_processor:
             # if NO ONE is on the tile, then automatically valid move (adj and empty); append to valid tiles
             #   else if the tile type is ROOM and there are 1 or more players on it, this is also valid, append
             # all other cases are INVALID (1 player and HALLWAY is invalid, hallway is considered full)
-            
+                # print("tile currently is", tile, "with this many players:", board_dict.get(tile).get_tile_num_players())
                 # tile is a string
                 if board_dict.get(tile).get_tile_num_players() == 0:
                     valid_tile_names.append(tile) #.get_tile_name())
@@ -79,13 +79,15 @@ class Game_processor:
                 elif board_dict.get(tile).get_tile_num_players() >= 1 and board_dict.get(tile).get_tile_type() == "room":
                     valid_tile_names.append(tile) #.get_tile_name())
         # may need to convert to frontend names
+        print("valid_tile_names is", valid_tile_names)
         return valid_tile_names
 
     # destination: tile object
     def move(board_dict, player, destination):
         # get backend tile name
 
-        old_location_obj = player.get_player_old_location()
+        # old_location_obj = player.get_player_old_location()
+        old_location_obj = player.get_player_current_location()
         old_location_name = ''
         
         player.update(destination)
@@ -94,11 +96,14 @@ class Game_processor:
         curr_location_name = curr_location_obj.get_tile_name()
         # Incremement the now occupied tile by 1
         board_dict.get(curr_location_name).tile_num_players += 1
-        
+        print("    curr_location_name is", curr_location_name)
+        print("    and has this num players:", board_dict.get(curr_location_name).tile_num_players)
         # Decrement the old tile by 1 if it exists (not None)
         if old_location_obj is not None:
             old_location_name = old_location_obj.get_tile_name()
+            print("old_location_name had", board_dict.get(old_location_name).tile_num_players)
             board_dict.get(old_location_name).tile_num_players -= 1
+            print("old_location_name has", board_dict.get(old_location_name).tile_num_players)
 
 
 

@@ -46,6 +46,7 @@ class Server:
                 #print("Server receiving player data")
                 client_message = Game_message_handler.receive_client_update(conn)
                 #print("Server received player data")
+
     
                 if not client_message:
                     print("Disconnected")
@@ -100,8 +101,13 @@ class Server:
                                 
                                 game_status = self.game.player_take_turn(player_turn)
                                 print(f"finished turn, game_status is now {game_status}")
+                                if game_status.get("turn_status") and game_status["turn_status"] == "movement":
+                                    print(f"turn_status == movement, game status is")
+                                    print(game_status)
                                 server_update = Game_message_handler.build_game_package(game_status)
-
+                                if server_update.get("turn_status") and server_update["turn_status"] == "movement":
+                                    print(f"\n\n\n\n\n\n\n\n\n\n\n\nwhoo server update")
+                                    print(server_update)
                             else:
                                 server_update = player_turn
 
@@ -161,7 +167,8 @@ class Server:
         #this is the while loop that will continue to run indefinietly for the server
         while True:
             self.id_count = id_count
-
+            # print(self.clients)
+            # print(self.id_count)
 
             if (id_count < PLAYER_MAX):
                 #socket function called, waiting for an incoming connection from a new client
