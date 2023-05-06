@@ -106,6 +106,9 @@ class Game_controller:
                 #     print(f"... received from different player { game['player_id']}")   
                 try:
                     prev_game_state = self.network.process_server_update(game, prev_game_state)
+                    
+                    if prev_game_state['turn_status'] == 'accusation' or prev_game_state['turn_status'] == 'movement' or prev_game_state['turn_status'] == 'suggestion':
+                        self.update_views(prev_game_state)
                     # print(f'prev_game_state is now {prev_game_state}')
                         
                     # if (prev_game_state['player_id'] == self.player_id) and prev_game_state['turn_status'] == 'MOVING' and 'valid_tile_names_for_player' in prev_game_state:
@@ -124,11 +127,11 @@ class Game_controller:
                         
                     
                     # else:
-                    try: 
-                        # Only update views after a move, suggest, or accuse
-                        self.update_views(prev_game_state)
-                    except Exception as err:
-                        print(err) 
+                    # try: 
+                    #     # Only update views after a move, suggest, or accuse
+                    #     self.update_views(prev_game_state)
+                    # except Exception as err:
+                    #     print(err) 
                          
                 except:
                     print("Couldn't process_server_update")

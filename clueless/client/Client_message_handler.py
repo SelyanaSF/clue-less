@@ -177,8 +177,8 @@ class Client_message_handler:
                         print()
                         self.game_has_started = True
                         
-                elif turn_status == 'START':
-                    print(server_message)
+                # elif turn_status == 'START':
+                #     print(server_message)
                 # else:
                     # server_message['turn_status'] = 'pass'
 
