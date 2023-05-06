@@ -70,8 +70,10 @@ class Server:
                                 #print("self.max_players:", self.max_players)
                                 #print("self.id_count:", self.id_count)
                                 
-                                player_turn['turn_status'] = "get"
-                                server_update = Game_message_handler.build_game_package(player_turn)
+                                # HERE What to set turn_status to after starting game?
+                                player_turn['turn_status'] = "pass"
+                                # player_turn['turn_status'] = "get"
+                                # server_update = Game_message_handler.build_game_package(player_turn)
 
                             elif player_turn['turn_status'] == "MOVING":
                                 # function for getting valid moves goes here
@@ -101,10 +103,12 @@ class Server:
                                 
                                 game_status = self.game.player_take_turn(player_turn)
                                 print(f"finished turn, game_status is now {game_status}")
+                                
                                 if game_status.get("turn_status") and game_status["turn_status"] == "movement":
                                     print(f"turn_status == movement, game status is")
                                     print(game_status)
                                 server_update = Game_message_handler.build_game_package(game_status)
+                                print(f"finished building game package, server_update is now {server_update}")
                                 if server_update.get("turn_status") and server_update["turn_status"] == "movement":
                                     print(f"\n\n\n\n\n\n\n\n\n\n\n\nwhoo server update")
                                     print(server_update)
@@ -122,10 +126,7 @@ class Server:
                 # Game_message_handler.send_game_update(conn, server_update)
                 try:
                     Game_message_handler.broadcast(self.clients, server_update)
-                except Exception as err:
-                    # index = self.clients.index(conn)
-                    # self.clients.remove(conn)
-                    # conn.close()
+                except Exception as err:  
                     print(f" failed broadcast with error: {err}")
                     break
                 # print("... sent server update to client")

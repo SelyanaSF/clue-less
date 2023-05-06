@@ -107,6 +107,9 @@ class Client_message_handler:
         # player_token = server_message['player_token']
         turn_status = server_message['turn_status']
         
+        # if turn_status != 'start game' and server_message['next_playername_turn']!='':
+        #     print(server_message)
+                        
         if server_message != prev_server_message:
             # print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
             if turn_status != "get" and turn_status != 'pass':
@@ -153,7 +156,7 @@ class Client_message_handler:
                         #     print("...accusation incorrect. Player " + player_id + " loses.")
                         self.player_accused = True
                 elif turn_status == 'end turn':
-                    print('... in Client_msg_handler')
+                    # print('... in Client_msg_handler')
                     if not self.player_ended_turn:
                         next_player_id = server_message['next_player']
                         print("Player " + player_id + "'s turn ended.")
@@ -169,7 +172,9 @@ class Client_message_handler:
                             self.player_ended_turn = False
                             self.player_taking_turn = False
                         print()
-
+                # HERE
+                # elif turn_status == 'pass' and server_message['next_playername_turn']!='':
+                #     server_message['turn_status'] = 'start game'
                 elif turn_status == 'start game':
                     if not self.game_has_started:
                         print("Game has begun. Let's play ClueLess!")

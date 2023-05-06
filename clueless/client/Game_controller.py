@@ -58,6 +58,10 @@ class Game_controller:
         self.character_choice = None
         self.weapon_choice = None
         self.room_choice = None
+        self.lost = False
+        self.on_playerid_turn = 0
+        self.on_playername_turn = ''
+        self.first_move_complete = False
         self.game_loop()
 
     ################################################################################
@@ -109,30 +113,19 @@ class Game_controller:
                     
                     if prev_game_state['turn_status'] == 'accusation' or prev_game_state['turn_status'] == 'movement' or prev_game_state['turn_status'] == 'suggestion':
                         self.update_views(prev_game_state)
+                        
+                    elif prev_game_state['turn_status'] == 'start game' and self.first_move_complete == False:
+                        self.first_move_complete = True # Ensure this only updates once, doesn't interfere with end turn later
+                        # print('Game_controller: updating player turn')
+                        self.on_playerid_turn = prev_game_state['next_player']
+                        self.on_playername_turn = prev_game_state['next_playername_turn']
+                    # END TURN finished
+                    elif prev_game_state['turn_status'] == 'end turn':
+                        # Update player turn to next player
+                        self.on_playerid_turn = prev_game_state['next_player']
+                        self.on_playername_turn = prev_game_state['next_playername_turn']
                     # print(f'prev_game_state is now {prev_game_state}')
-                        
-                    # if (prev_game_state['player_id'] == self.player_id) and prev_game_state['turn_status'] == 'MOVING' and 'valid_tile_names_for_player' in prev_game_state:
-                    #     # while input_tile_name not in prev_game_state.get('valid_tile_names_for_player'):
-                    #     #    input_tile_name = input("Please input a room from the list above: \n    ")
-                        
-                    #     # print("    Success! Sending room selection to server...")
-
-                    #     # update game data
-                    #     # game_data = self.network.build_client_package(self.player_id, 'MOVEMENT', input_tile_name, '','') # 'next_player': '', 'next_playername_turn':'')
-
-                    #     # KT: take out this continue when ui is integrated, may cause 
-                    #     # errors when you do but needed for command line input rn since
-                    #     # it stops game_data from being overwritten at the end of the loop
-                    #     # continue
-                        
-                    
-                    # else:
-                    # try: 
-                    #     # Only update views after a move, suggest, or accuse
-                    #     self.update_views(prev_game_state)
-                    # except Exception as err:
-                    #     print(err) 
-                         
+                          
                 except:
                     print("Couldn't process_server_update")
                     break
@@ -329,9 +322,10 @@ class Game_controller:
                     
             # HERE is this needed?
             # if (self.state == 'END TURN'):
+            #     self.state == "START"
             #     turn_dict = {'':''}
-            #     turn_data = self.network.build_client_package(self.player_id, self.state, turn_dict)
-            #     print(f'... turn data is now {turn_data}')
+            #     turn_data = self.network.build_client_package(self.player_id, self.state, turn_dict, '','') # 'next_player': '', 'next_playername_turn':''
+                # print(f'... turn data is now {turn_data}')
                 
         return turn_data
 
@@ -339,7 +333,14 @@ class Game_controller:
     # add_main_view is the function to show main view
     # Input : events [type: Pygame Event]
     ################################################################################
-    def add_main_view(self, events, prev_game_state):        
+    def add_main_view(self, events, prev_game_state):     
+        if self.on_playerid_turn == 0:
+            self.board.display_update(self.screen, '', (300, 30))
+        elif self.on_playerid_turn == self.player_id:
+            self.board.display_update(self.screen, f"It's your turn", (300, 30))
+        else:
+            self.board.display_update(self.screen, f"It's {self.on_playername_turn}'s turn", (300, 30))
+                
         player_caption = "Clue-Less Player " + str(self.id) + ": " + str(self.player_token)
         pygame.display.set_caption(player_caption)
         # Add board
@@ -355,7 +356,7 @@ class Game_controller:
         is_Suggest_Selection_Active = self.board.load_button(self.screen, "Suggest", button_X_Pos, button_Y_Pos + button_distance)
         is_Accuse_Selection_Active = self.board.load_button(self.screen, "Accuse", button_X_Pos, button_Y_Pos + button_distance*2)
         isEndTurnSelectionActive = self.board.load_button(self.screen, "End Turn", button_X_Pos, button_Y_Pos + button_distance*3)
-        
+            
         # Initialize valid players 
         # TO DO: players should be added to screen later depending on which tokens are chosen (here for now to test)
         self.token_coor_dict = self.board.load_player_tokens(self.screen, self.board, self.token_coor_dict)
@@ -393,7 +394,13 @@ class Game_controller:
             turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos), '','') # 'next_player': '', 'next_playername_turn':''
             # #print(turn_data)
             self.network.send(turn_data)
-
+        if self.lost == True:
+            self.board.display_update(self.screen, "Sorry, You Lost!", (300, 30))
+            board_surface = pygame.Surface((2000,2000))
+            board_surface.fill('gray')
+            board_surface.set_alpha(200)
+            self.screen.blit(board_surface,(0,0))
+            
         return turn_data
 
     ################################################################################
@@ -486,14 +493,20 @@ class Game_controller:
         # ACCUSATION finished
         if prev_game_state['turn_status']=='accusation':
             if 'accused_result_player' not in prev_game_state:
-                # TO FINALIZE
                 if this_player_id == self.player_id:
                     print("You Lost!")
+                    self.lost = True
                     self.board.display_update(self.screen, "Sorry, You Lost!", (300, 30))
                 else:
                     print(f"Player {this_player_id} Lost!")
                     self.board.display_update(self.screen, f"Player {this_player_id} Lost!", (300, 30))
-                    
+                # Player lost, update turn
+                self.on_playerid_turn = prev_game_state['next_player']
+                self.on_playername_turn = prev_game_state['next_playername_turn']
+                self.state = 'START'
+                # turn_data = self.network.build_client_package(self.player_id, self.state, '', '','') # 'next_player': '', 'next_playername_turn':''
+                # self.network.send(turn_data)
+
             else: 
                 self.state = 'WIN'
                 this_player_id = prev_game_state['player_id']
@@ -519,7 +532,6 @@ class Game_controller:
                 self.board.display_update(self.screen, f"You've successfully moved to {prev_game_state['player_location']}!", (300, 30))
             else:
                 self.board.display_update(self.screen, f"{prev_game_state['moved_player']} has moved to {prev_game_state['player_location']}", (300, 30))
-            
             self.state = 'START'
             turn_data = self.network.build_client_package(self.player_id, self.state, '', '','') # 'next_player': '', 'next_playername_turn':''
             self.network.send(turn_data)
@@ -534,33 +546,28 @@ class Game_controller:
                 else:
                     self.board.display_update(self.screen, f"No match found amongst other hands!", (400, 400))
                     print("No match found amongst other hands!")
-                    
-        # ALL CHOSE TOKEN finished, starting game
-        elif prev_game_state['turn_status'] == 'start game' :
-            first_player_id = prev_game_state['next_player']
-            print(prev_game_state)
-            # Player's first turn
-            if first_player_id == self.player_id:
-                print("It's your first turn")
-                self.board.display_update(self.screen, f"It's your first turn", (300, 30))
-            # Other players, not their turn
-            else:
-                print(f"It's {prev_game_state['next_playername_turn']}'s turn")
-                self.board.display_update(self.screen, f"It's {prev_game_state['next_playername_turn']}'s turn", (300, 30))
-        
-        # END TURN finished
-        elif prev_game_state['turn_status'] == 'end turn':
-            # Player's turn just ended
-            if this_player_id == self.player_id:
-                self.board.display_update(self.screen, f"Your turn has ended", (300, 30))
-                self.board.display_update(self.screen, f"It's {prev_game_state['next_playername_turn']}'s turn", (300, 50))
-            # This player's turn
-            elif prev_game_state['next_player'] == self.player_id:
-                self.board.display_update(self.screen, f"It's your turn", (300, 30))
-            # Other players, not their turn
-            else:
-                self.board.display_update(self.screen, f"It's {prev_game_state['next_playername_turn']}'s turn", (300, 30))
     
+    ################################################################################
+    # add_win_view is the function to show win view
+    # Input : winner [type: Boolean], winner_player_id [type: int],  case_file [type: dict]
+    ################################################################################    
+    def add_win_screen(self, winner, winner_player_id, case_file):
+        # Extract character, weapon, and room from case file
+        readable_character = Client_message_handler.get_readable_playername(case_file['character'])
+        readable_weapon = Client_message_handler.get_readable_weaponname(case_file['weapon'])
+        readable_room = Client_message_handler.get_readable_tilename(case_file['room'])
+        
+        data_folder = Path("clueless/data/graphics/")
+        # mouse_pos = pygame.mouse.get_pos()
+        image = pygame.image.load(data_folder / "splash.png")
+        image = pygame.transform.scale(image, (self.WIDTH, self.HEIGHT))
+        self.screen.blit(image, (0, 0))
+
+        TITLE_TEXT = self.get_font(65).render("CLUE-LESS", True, "#b68f40")
+        TITLE_RECT = TITLE_TEXT.get_rect(center=(530, 100))
+        self.screen.blit(TITLE_TEXT, TITLE_RECT)
+                    
+      
     ################################################################################
     # add_win_view is the function to show win view
     # Input : winner [type: Boolean], winner_player_id [type: int],  case_file [type: dict]

@@ -117,7 +117,9 @@ class Game_message_handler:
                 game_package.update({'accused_cards': game_status['accused_cards']})
                 if 'accused_result_player' in game_status:
                     game_package.update({'accused_result_player': game_status['accused_result_player']})
-                    
+                game_status.update({'next_player': game_status['next_player']})
+                game_status.update({'next_playername_turn': game_status['next_playername_turn']})
+                
             elif turn_status == 'end turn':
                 game_package.update({'next_player': game_status['next_player']})
                 game_package.update({'next_playername_turn': game_status['next_playername_turn']})
@@ -146,5 +148,5 @@ class Game_message_handler:
             try: 
                 Game_message_handler.send_game_update(client, message)
             except Exception as err:
-                print(f'failed broadcast with error {err}')
-                # pass
+                print(f'failed broadcast with error {err} for message {message}')
+                pass
