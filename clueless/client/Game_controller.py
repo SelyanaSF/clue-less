@@ -504,8 +504,9 @@ class Game_controller:
                 self.on_playerid_turn = prev_game_state['next_player']
                 self.on_playername_turn = prev_game_state['next_playername_turn']
                 self.state = 'START'
-                # turn_data = self.network.build_client_package(self.player_id, self.state, '', '','') # 'next_player': '', 'next_playername_turn':''
-                # self.network.send(turn_data)
+                # Below is essential to reset the state to START so old messages don't glitch
+                turn_data = self.network.build_client_package(self.player_id, self.state, '', '','') # 'next_player': '', 'next_playername_turn':''
+                self.network.send(turn_data)
 
             else: 
                 self.state = 'WIN'
@@ -537,15 +538,68 @@ class Game_controller:
             self.network.send(turn_data)
 
         # SUGGEST finished
-        elif (prev_game_state['player_id'] == self.player_id) and prev_game_state['turn_status'] == 'suggestion' and 'suggested_cards' in prev_game_state:
-            print(f"Success! Player {prev_game_state['player_id']} (you) have suggested {prev_game_state['suggested_cards']}!")
+        elif prev_game_state['turn_status'] == 'suggestion' and 'suggested_cards' in prev_game_state:
+            print(f"Success! Player {prev_game_state['player_id']} has suggested {prev_game_state['suggested_cards']}!")
+            
+            tilename_dict = {'Study':'study_room',
+                    'Hall':'hall',
+                    'Lounge':'lounge',
+                    'Library':'library',
+                    'Billiard Room':'billiard_room',
+                    'Dining Room':'dining_room',
+                    'Conservatory':'conservatory',
+                    'Ballroom':'ballroom',
+                    'Kitchen':'kitchen',
+                    'Hallway 01':'hallway_1',
+                    'Hallway 02':'hallway_2',
+                    'Hallway 03':'hallway_3',
+                    'Hallway 04':'hallway_4',
+                    'Hallway 05':'hallway_5',
+                    'Hallway 06':'hallway_6',
+                    'Hallway 07':'hallway_7',
+                    'Hallway 08':'hallway_8',
+                    'Hallway 09':'hallway_9',
+                    'Hallway 10':'hallway_10',
+                    'Hallway 11':'hallway_11',
+                    'Hallway 12':'hallway_12'}
+            
+            frontendname_dict = {'colonel_mustard':'Colonel Mustard',
+                         'miss_scarlet':'Miss Scarlet',
+                         'mr_green':'Mr. Green',
+                         'mrs_peacock':'Mrs. Peacock',
+                         'mrs_white':'Mrs. White',
+                         'prof_plum':'Professor Plum'
+                         }
+
+            suggested_suspect = frontendname_dict.get(prev_game_state['suggested_cards']['character'])
+            frontend_tile = tilename_dict.get(prev_game_state['suggested_cards']['room'])
+            self.move_token(suggested_suspect, self.tiles_directory[frontend_tile][1])
+
+            self.board.display_update(self.screen, f"Success! Player {prev_game_state['player_id']} has suggested {prev_game_state['suggested_cards']['character']} used the {prev_game_state['suggested_cards']['weapon']} in the {prev_game_state['suggested_cards']['room']}!", (400,30))
+            # pygame.time.delay(500)
+            
             if this_player_id == self.player_id:
                 if 'suggest_result_player' in prev_game_state and prev_game_state['suggested_match_card'] != "No matched card found!":
                     print(prev_game_state['suggest_result_player'], "has shown you:", prev_game_state['suggested_match_card'])
-                    self.board.display_update(self.screen, f"{prev_game_state['suggest_result_player']} has shown you: {prev_game_state['suggested_match_card']}", (400, 400))
+                    self.board.display_update(self.screen, f"{prev_game_state['suggest_result_player']} has shown you: {prev_game_state['suggested_match_card']}", (400,30))
+                    #pygame.time.wait(5000)
                 else:
-                    self.board.display_update(self.screen, f"No match found amongst other hands!", (400, 400))
+                    self.board.display_update(self.screen, f"No match found amongst other hands!", (400,30))
                     print("No match found amongst other hands!")
+                    #pygame.time.wait(5000)
+            else: 
+                if 'suggest_result_player' in prev_game_state and prev_game_state['suggested_match_card'] != "No matched card found!":
+                    print(f"{prev_game_state['suggest_result_player']} is showing Player {prev_game_state['player_id']} a card! How intriguing :)")
+                    self.board.display_update(self.screen, f"{prev_game_state['suggest_result_player']} is showing Player {prev_game_state['player_id']} a card! How intriguing :)", (400,30))
+                    #pygame.time.wait(5000)
+                else:
+                    self.board.display_update(self.screen, f"No match found amongst other hands!", (400,30))
+                    print("No match found amongst other hands!")
+            
+            # pygame.time.delay(500)
+            self.state = 'START'
+            turn_data = self.network.build_client_package(self.player_id, self.state, '', '','') # 'next_player': '', 'next_playername_turn':''
+            self.network.send(turn_data)
     
     ################################################################################
     # add_win_view is the function to show win view

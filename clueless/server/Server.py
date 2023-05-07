@@ -80,8 +80,8 @@ class Server:
                                 # when player clicks "Go To Room", room selection becomes active in the 
                                 # client; client gets sent a list of names of valid tiles to move to
                                 player = self.game.get_player_object(player_turn['player_id'])
-                                print(f'player_turn {player_turn}')
-                                print(player)
+                                #print(f'player_turn {player_turn}')
+                                #print(player)
                                 valid_tile_names_for_player = Game_processor.get_valid_moves(self.game.game_board, player)
                                 print("Tiles to send to client", valid_tile_names_for_player)
                                 print("player_turn is", player_turn)
@@ -99,19 +99,19 @@ class Server:
                                 # pass
 
                             elif player_turn['turn_status'] != "get" and player_turn['turn_status'] != "start game":
-                                print(f"got to server with turn_status {player_turn['turn_status']}")
+                                #print(f"got to server with turn_status {player_turn['turn_status']}")
                                 
                                 game_status = self.game.player_take_turn(player_turn)
-                                print(f"finished turn, game_status is now {game_status}")
+                                #print(f"finished turn, game_status is now {game_status}")
                                 
-                                if game_status.get("turn_status") and game_status["turn_status"] == "movement":
-                                    print(f"turn_status == movement, game status is")
-                                    print(game_status)
+                                # if game_status.get("turn_status") and game_status["turn_status"] == "movement":
+                                #     print(f"turn_status == movement, game status is")
+                                #     print(game_status)
                                 server_update = Game_message_handler.build_game_package(game_status)
-                                print(f"finished building game package, server_update is now {server_update}")
-                                if server_update.get("turn_status") and server_update["turn_status"] == "movement":
-                                    print(f"\n\n\n\n\n\n\n\n\n\n\n\nwhoo server update")
-                                    print(server_update)
+                                # print(f"finished building game package, server_update is now {server_update}")
+                                # if server_update.get("turn_status") and server_update["turn_status"] == "movement":
+                                    # print(f"\n\n\n\n\n\n\n\n\n\n\n\nwhoo server update")
+                                    # print(server_update)
                             else:
                                 server_update = player_turn
 
