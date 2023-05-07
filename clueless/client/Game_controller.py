@@ -17,15 +17,16 @@ import traceback
 DEFAULT_GAME = dict({'player_id': '0', 'turn_status': 'get','next_player':'0','next_playername_turn':''})
 server_update = dict({})
 CHARACTER_TOKENS = ["Mrs. Peacock", "Mrs. White", "Miss Scarlet", "Mr. Green", "Colonel Mustard", "Professor Plum"]
+data_folder = Path("clueless/data/graphics/")
 
 class Game_controller:
 
     # WIDTH AND HEIGHT OF THE WINDOW
     WIDTH = 1050
     HEIGHT = 700
-    FPS = 60
+    FPS = 20
 
-    # There are FOUR Game State : "START", "MOVING", "ACCUSING", "SUGGESTING", "CHOOSING_TOKEN", "SPLASH_SCREEN", "chose_token"
+    # There are NINE Game State : "START", "MOVING", "ACCUSING", "SUGGESTING", "CHOOSING_TOKEN", "SPLASH_SCREEN", "chose_token", "ask hand", "MOVEMENT"
     # Each State will have different views
     # SEND MESSAGE TO SERVER comments are placeholder where the code sends message to server
     ############################################################################################
@@ -170,7 +171,7 @@ class Game_controller:
             # This is to highlight rectangle when choosing the room and print the choosen one on the options box
 
             if (self.state == 'CHOOSING_TOKEN'):
-                self.choose_player_token()
+                self.choose_player_token(events)
             
             if (self.state == 'MOVING' and 'valid_tile_names_for_player' in prev_game_state): #'MOVEMENT'):
                 # print("check_events moving")
@@ -214,9 +215,8 @@ class Game_controller:
 
                 # Only allow event clicked for tiles listed on prev_game_state array
 
-
                 for key in allowed_tiles:
-                    if (self.tiles_directory[key][0].collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                    if (self.tiles_directory[key][0].collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                         pygame.draw.rect(self.screen, (202, 228, 241), (800,450,180,50), width=0, border_radius=5)
                         self.board.highlight_tile_rect(self.screen,(0,200,0),[key])
                         message_font = pygame.font.SysFont('Comic Sans MS', 14)
@@ -234,7 +234,7 @@ class Game_controller:
                         # self.screen.blit(message_surface_02, (100,650))
 
                 enterRect = pygame.Rect(810, 560, 60, 35)
-                if (enterRect.collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                if (enterRect.collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                     if self.room_choice is not None:
                         self.state = "MOVING"
                         # SEND MESSAGE TO SERVER AND MOVE TOKEN
@@ -248,7 +248,7 @@ class Game_controller:
 
                 #Manually record the rectangle position of close button. Everytime this button is pressed, close the options box
                 closeRect = pygame.Rect(970, 570, 25, 25)
-                if (closeRect.collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                if (closeRect.collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                     self.board.close_room_options(self.screen, self.base_color)
                     self.state = "START"
                     #is_Room_Selection_Active = False
@@ -259,7 +259,7 @@ class Game_controller:
                 for key in self.suggest_weapon_dict:
                     if self.suggest_weapon_dict[key][3] == True:
                         self.board.highlight_rect(self.screen,(0,200,0),self.suggest_weapon_dict[key][2],key)
-                    if (self.suggest_weapon_dict[key][0].collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                    if (self.suggest_weapon_dict[key][0].collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                         for i in self.suggest_weapon_dict:
                             self.suggest_weapon_dict[i][3] = False
                         if (self.suggest_weapon_dict[key][2] == 'weapon') :
@@ -270,7 +270,7 @@ class Game_controller:
                 for key in self.suggest_suspect_dict:
                     if self.suggest_suspect_dict[key][3] == True:
                         self.board.highlight_rect(self.screen,(0,200,0),self.suggest_suspect_dict[key][2],key)
-                    if (self.suggest_suspect_dict[key][0].collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                    if (self.suggest_suspect_dict[key][0].collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                         for i in self.suggest_suspect_dict:
                             self.suggest_suspect_dict[i][3] = False
                         if (self.suggest_suspect_dict[key][2] == 'suspect') :
@@ -286,7 +286,7 @@ class Game_controller:
                 for key in self.accuse_weapon_dict:
                     if self.accuse_weapon_dict[key][3] == True:
                         self.board.highlight_rect(self.screen,(0,200,0),self.accuse_weapon_dict[key][2],key)
-                    if (self.accuse_weapon_dict[key][0].collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                    if (self.accuse_weapon_dict[key][0].collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                         for i in self.accuse_weapon_dict:
                             self.accuse_weapon_dict[i][3] = False
                         if (self.accuse_weapon_dict[key][2] == 'weapon') :
@@ -297,7 +297,7 @@ class Game_controller:
                 for key in self.accuse_suspect_dict:
                     if self.accuse_suspect_dict[key][3] == True:
                         self.board.highlight_rect(self.screen,(0,200,0),self.accuse_suspect_dict[key][2],key)
-                    if (self.accuse_suspect_dict[key][0].collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                    if (self.accuse_suspect_dict[key][0].collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                         for i in self.accuse_suspect_dict:
                             self.accuse_suspect_dict[i][3] = False
                         if (self.accuse_suspect_dict[key][2] == 'suspect') :
@@ -308,7 +308,7 @@ class Game_controller:
                 for key in self.accuse_room_dict:
                     if self.accuse_room_dict[key][3] == True:
                         self.board.highlight_rect(self.screen,(0,200,0),self.accuse_room_dict[key][2],key)
-                    if (self.accuse_room_dict[key][0].collidepoint(mousePos) and pygame.mouse.get_pressed()[0] == 1):
+                    if (self.accuse_room_dict[key][0].collidepoint(mousePos) and event.type == pygame.MOUSEBUTTONDOWN):
                         for i in self.accuse_room_dict:
                             self.accuse_room_dict[i][3] = False
                         if (self.accuse_room_dict[key][2] == 'room') :
@@ -319,7 +319,9 @@ class Game_controller:
                 # turn_data = self.network.receive()
                 # print(f"receiving message from server after accusation: {turn_data}")
                 turn_data = self.network.build_client_package(self.player_id, self.state, accused_card_dict, '','') # 'next_player': '', 'next_playername_turn':''
-                    
+            if (self.state == 'ask hand' and 'player_hand' in prev_game_state):
+                self.add_hands_view(prev_game_state['player_hand'])
+
             # HERE is this needed?
             # if (self.state == 'END TURN'):
             #     self.state == "START"
@@ -352,10 +354,12 @@ class Game_controller:
         button_Y_Pos = 75
         button_X_Pos = 800
         button_distance = 60
-        is_Room_Selection_Active = self.board.load_button(self.screen, "Go To Room", button_X_Pos, button_Y_Pos)
-        is_Suggest_Selection_Active = self.board.load_button(self.screen, "Suggest", button_X_Pos, button_Y_Pos + button_distance)
-        is_Accuse_Selection_Active = self.board.load_button(self.screen, "Accuse", button_X_Pos, button_Y_Pos + button_distance*2)
-        isEndTurnSelectionActive = self.board.load_button(self.screen, "End Turn", button_X_Pos, button_Y_Pos + button_distance*3)
+        is_Room_Selection_Active = self.board.load_button(self.screen, "Go To Room", button_X_Pos, button_Y_Pos, (150, 150, 150))
+        is_Suggest_Selection_Active = self.board.load_button(self.screen, "Suggest", button_X_Pos, button_Y_Pos + button_distance,(150, 150, 150))
+        is_Accuse_Selection_Active = self.board.load_button(self.screen, "Accuse", button_X_Pos, button_Y_Pos + button_distance*2,(150, 150, 150))
+        isEndTurnSelectionActive = self.board.load_button(self.screen, "End Turn", button_X_Pos, button_Y_Pos + button_distance*3,(150, 150, 150))
+
+        is_Show_Hands_Active = self.board.load_button(self.screen, "My Cards", button_X_Pos, button_Y_Pos + button_distance*4.5, (205,200,177))
             
         # Initialize valid players 
         # TO DO: players should be added to screen later depending on which tokens are chosen (here for now to test)
@@ -385,6 +389,11 @@ class Game_controller:
             self.board.load_options(self.screen, self.state, events)
             turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos), '','') # 'next_player': '', 'next_playername_turn':''
             #print(turn_data)
+            self.network.send(turn_data)
+        
+        if is_Show_Hands_Active:
+            self.state = "ask hand"
+            turn_data = self.network.build_client_package(self.player_id, self.state, self.player_token, '','') # 'next_player': '', 'next_playername_turn':''
             self.network.send(turn_data)
 
         # if player chooose end turn, then it passes the turn to others.
@@ -417,8 +426,9 @@ class Game_controller:
         # Initialize Back Button
         button_X_Pos = 250
         button_Y_Pos = 620
-        is_back_button_active = self.board.load_button(self.screen, "Back to Main", button_X_Pos, button_Y_Pos)
-        is_submit_button_active = self.board.load_button(self.screen, "Submit", button_X_Pos+350, button_Y_Pos)
+        button_color = (150, 150, 150)
+        is_back_button_active = self.board.load_button(self.screen, "Back to Main", button_X_Pos, button_Y_Pos, button_color)
+        is_submit_button_active = self.board.load_button(self.screen, "Submit", button_X_Pos+350, button_Y_Pos, button_color)
 
         self.board.load_suggest_board(self.screen, self.board)
         self.board.load_options(self.screen, self.state, events)
@@ -459,8 +469,9 @@ class Game_controller:
         # Initialize Back Button
         button_X_Pos = 250
         button_Y_Pos = 620
-        is_back_button_active = self.board.load_button(self.screen, "Back to Main", button_X_Pos, button_Y_Pos)
-        is_submit_button_active = self.board.load_button(self.screen, "Submit", button_X_Pos+350, button_Y_Pos)
+        button_color = (150, 150, 150)
+        is_back_button_active = self.board.load_button(self.screen, "Back to Main", button_X_Pos, button_Y_Pos, button_color)
+        is_submit_button_active = self.board.load_button(self.screen, "Submit", button_X_Pos+350, button_Y_Pos, button_color)
 
         self.board.load_accuse_board(self.screen, self.board)
         if is_back_button_active: 
@@ -611,7 +622,6 @@ class Game_controller:
         readable_weapon = Client_message_handler.get_readable_weaponname(case_file['weapon'])
         readable_room = Client_message_handler.get_readable_tilename(case_file['room'])
         
-        data_folder = Path("clueless/data/graphics/")
         # mouse_pos = pygame.mouse.get_pos()
         image = pygame.image.load(data_folder / "splash.png")
         image = pygame.transform.scale(image, (self.WIDTH, self.HEIGHT))
@@ -632,7 +642,6 @@ class Game_controller:
         readable_weapon = Client_message_handler.get_readable_weaponname(case_file['weapon'])
         readable_room = Client_message_handler.get_readable_tilename(case_file['room'])
         
-        data_folder = Path("clueless/data/graphics/")
         # mouse_pos = pygame.mouse.get_pos()
         image = pygame.image.load(data_folder / "splash.png")
         image = pygame.transform.scale(image, (self.WIDTH, self.HEIGHT))
@@ -659,11 +668,10 @@ class Game_controller:
         self.screen.blit(CASEFILE_TEXT_REST, CASEFILE_RECT_REST)
          
     def get_font(self,size): # Returns Press-Start-2P in the desired size
-        data_folder = Path("clueless/data/font/")
-        return pygame.font.Font(data_folder / "font.ttf", size)
+        font_folder = Path("clueless/data/font/")
+        return pygame.font.Font(font_folder / "font.ttf", size)
     
     def add_splash_screen(self, events):
-        data_folder = Path("clueless/data/graphics/")
         mouse_pos = pygame.mouse.get_pos()
         image = pygame.image.load(data_folder / "splash.png")
         image = pygame.transform.scale(image, (self.WIDTH, self.HEIGHT))
@@ -691,37 +699,30 @@ class Game_controller:
                     pygame.quit()
                     sys.exit()
 
-    def choose_player_token(self):
-        # token = "None"
-        # print("Please choose your character token")
-        # print(CHARACTER_TOKENS)
-        # token = input("Please enter your character choice: ")
-        #while token not in CHARACTER_TOKENS:
-        #    token = input("Please enter a valid character choice: ")
-
-        # print("You have chosen: " + token)
+    def choose_player_token(self, events):
         self.screen.fill(self.base_color)
         mouse_pos = pygame.mouse.get_pos()
 
         # Load view from board class
         rectangle_dict = self.board.load_character_selection_board(self.screen)
-        
-        if self.player_token == "None":
-            for rect in rectangle_dict:
-                if (rectangle_dict[rect].collidepoint(mouse_pos) and pygame.mouse.get_pressed()[0] == 1):
-                    self.highlighted_character_rect = rectangle_dict[rect]
-                    pygame.draw.rect(self.screen,"Red",rectangle_dict[rect],4)
-                    print("Player " + self.player_id + ' choose ' + rect)
 
-                    # send to server for player's token selection
-                    self.player_token = rect
-                    self.game_state['player_id'] = self.player_id
-                    self.game_state['player_token'] = self.player_token
-                    self.game_state['turn_status'] = "get"
-                    game_data = self.network.build_client_package(self.player_id, "chose_token", self.player_token, '','') # 'next_player': '', 'next_playername_turn':''
-                    self.network.send(game_data)
+        for event in events:
+            if self.player_token == "None":
+                for rect in rectangle_dict:
+                    if (rectangle_dict[rect].collidepoint(mouse_pos) and event.type == pygame.MOUSEBUTTONDOWN):
+                        self.highlighted_character_rect = rectangle_dict[rect]
+                        pygame.draw.rect(self.screen,"Red",rectangle_dict[rect],4)
+                        print("Player " + self.player_id + ' choose ' + rect)
 
-                    self.state = 'START'
+                        # send to server for player's token selection
+                        self.player_token = rect
+                        self.game_state['player_id'] = self.player_id
+                        self.game_state['player_token'] = self.player_token
+                        self.game_state['turn_status'] = "get"
+                        game_data = self.network.build_client_package(self.player_id, "chose_token", self.player_token, '','') # 'next_player': '', 'next_playername_turn':''
+                        self.network.send(game_data)
+
+                        self.state = 'START'
 
         #token = "None"
         # print("Please choose your character token")
@@ -733,6 +734,49 @@ class Game_controller:
         # print("You have chosen: " + token)
         
         #return "Professor Plum"
+    def add_hands_view(self, hands_array):
+        background = pygame.image.load(data_folder / "splash.png")
+        background = pygame.transform.scale(background, (self.WIDTH, self.HEIGHT))
+        self.screen.blit(background, (0, 0))
+
+        translated_hands = []
+
+        # TRANSLATE the hand array
+        hand_dict = {'Study':'study',
+                    'Hall':'hall',
+                    'Lounge':'lounge',
+                    'Library':'library',
+                    'Billiard Room':'billiard',
+                    'Dining Room':'dining',
+                    'Conservatory':'conservatory',
+                    'Ballroom':'ballroom',
+                    'Kitchen':'kitchen',
+                    'Rope':'rope',
+                    'Lead Pipe':'leadpipe',
+                    'Dagger':'dagger',
+                    'Wrench':'wrench',
+                    'Candlestick':'candlestick',
+                    'Revolver':'revolver',
+                    'Miss Scarlet':'miss_scarlet',
+                    'Colonel Mustard':'colonel_mustard',
+                    'Mrs. White':'mrs_white',
+                    'Mr. Green':'mr_green',
+                    'Mrs. Peacock':'mrs_peacock',
+                    'Professor Plum':'prof_plum'}
+        
+        for each in hands_array:
+            translated_hands.append(hand_dict[each])
+
+        self.board.load_hands(self.screen, translated_hands)
+
+        button_X_Pos = 440
+        button_Y_Pos = 620
+        button_color = (238,232,205)
+        is_back_button_active = self.board.load_button(self.screen, "Back to Main", button_X_Pos, button_Y_Pos, button_color)
+
+        if is_back_button_active:
+            self.state = "START"
+            self.screen.fill(self.base_color)
 
     def move_token(self,token_name, pos_tuple):
         # print("MOVING ")
@@ -767,30 +811,3 @@ class Game_controller:
                     self.suggest_weapon_dict[i][3] = False
             for i in self.suggest_suspect_dict:
                     self.suggest_suspect_dict[i][3] = False
-################################################################################
-# Instantiate Deck class
-# Remove docstring to execute 
-
-# players= []
-
-# num_players= int(input("Enter the number of players: "))
-
-# assert 6 >= num_players >=3, f"A total number of 3-6 players are allowed to\
-#  participate in this game."
-################################################################################
-
-#Instatiate Weapon_Image Class 
-# Remove docstring to execute 
-'''
-weapon_dict= {
-    'Dagger':'dagger.png', 'Candlestick':'candlestick.png', 'Wrench': 'wrench.png',
-    'Leadpipe':'leadpipe.png', 'Revolver': 'revolver.png', 'Rope': 'rope.png'
-}
-
-wep_img= Weapon_Image()
-
-# Enter the name of your Weapon
-weapon_name= input("State the name of your Weapon (first letter capitalized) to display image: ")
-wep_img.display_weapon_image(weapon_dict[weapon_name])
-'''
-################################################################################

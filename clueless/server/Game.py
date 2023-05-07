@@ -198,7 +198,7 @@ class Game:
         dealt_decks = self.game_deck.deal(num_players)
         for i, player in enumerate(self.players):
             player.set_player_hand(dealt_decks[i])
-            print(f'Player {player.get_player_id()} is playing {player.get_player_name()} with hand {player.get_hand()}')
+            print(f'Player {player.get_player_id()} is playing {player.get_player_name()} with hand {list(player.get_hand().keys())}')
             print()
 
     def set_turn_order(self):

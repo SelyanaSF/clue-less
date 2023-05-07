@@ -105,7 +105,9 @@ class Game_message_handler:
                 # print(game_package)
             elif turn_status == 'MOVING':
                 game_package.update({'valid_tile_names_for_player': game_status['valid_tile_names_for_player']})
-                
+            elif turn_status == 'ask hand':
+                game_package.update({'player_hand': game_status['player_hand']})
+                print(game_package)
             elif turn_status == 'suggestion':
                 # frontend_tilename = tilename_dict[(game_status['suggested_cards']['room'])]
                 # print("frontend_tile is", frontend_tilename)

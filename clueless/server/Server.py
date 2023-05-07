@@ -97,6 +97,19 @@ class Server:
                                 # print("server update is", server_update)
 
                                 # pass
+                            elif player_turn['turn_status'] == 'ask hand':
+                                player = self.game.get_player_object(player_turn['player_id'])
+                                player_hand = list(player.get_hand().keys())
+                                print(f'Player hand is ${player_hand}')
+                                game_status = dict({
+                                    'player_id': player.get_player_id(),
+                                    # 'player_token': player_turn['player_token'],
+                                    'turn_status': player_turn['turn_status'],
+                                    'player_hand' : player_hand,
+                                    'next_player': '', 'next_playername_turn':''
+                                })
+                                print("Sending hands to client", player_hand)
+                                server_update = Game_message_handler.build_game_package(game_status)
 
                             elif player_turn['turn_status'] != "get" and player_turn['turn_status'] != "start game":
                                 #print(f"got to server with turn_status {player_turn['turn_status']}")
