@@ -114,7 +114,7 @@ class Client_message_handler:
             # print(f"...processing server message --> {server_message} and prev server message {prev_server_message}")
             if turn_status != "get" and turn_status != 'pass':
                 if not self.player_taking_turn:
-                    print("Player taking turn: ", player_id)
+                    #print("Player taking turn: ", player_id)
                     self.player_taking_turn = True
                 #based on player's turn and game status, update players with the status of the game
                 if turn_status == 'movement':
@@ -157,21 +157,23 @@ class Client_message_handler:
                         self.player_accused = True
                 elif turn_status == 'end turn':
                     # print('... in Client_msg_handler')
-                    if not self.player_ended_turn:
-                        next_player_id = server_message['next_player']
-                        print("Player " + player_id + "'s turn ended.")
-                        self.player_ended_turn = True
+                    # if not self.player_ended_turn:
+                    #     next_player_id = server_message['next_player']
+                    #     print("Player " + player_id + "'s turn ended.")
+                    #     self.player_ended_turn = True
 
-                        if next_player_id == self.id:
-                            print("It is now your turn!")
-                        else:
-                            print(f"It is now Player {next_player_id}'s turn.")
-                            self.player_moved = False
-                            self.player_suggested = False
-                            self.player_accused = False
-                            self.player_ended_turn = False
-                            self.player_taking_turn = False
-                        print()
+                    #     if next_player_id == self.id:
+                    #         print("It is now your turn!")
+                    #     else:
+                    #         print(f"It is now Player {next_player_id}'s turn.")
+                    #         self.player_moved = False
+                    #         self.player_suggested = False
+                    #         self.player_accused = False
+                    #         self.player_ended_turn = False
+                    #         self.player_taking_turn = False
+                    #     print()
+                    #print("in end turn")
+                    pass
                 # HERE
                 # elif turn_status == 'pass' and server_message['next_playername_turn']!='':
                 #     server_message['turn_status'] = 'start game'

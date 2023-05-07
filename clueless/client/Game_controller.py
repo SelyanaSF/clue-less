@@ -63,6 +63,7 @@ class Game_controller:
         self.on_playerid_turn = 0
         self.on_playername_turn = ''
         self.first_move_complete = False
+        self.end_turn_received = False
         self.game_loop()
 
     ################################################################################
@@ -114,18 +115,31 @@ class Game_controller:
                     
                     if prev_game_state['turn_status'] == 'accusation' or prev_game_state['turn_status'] == 'movement' or prev_game_state['turn_status'] == 'suggestion':
                         self.update_views(prev_game_state)
+                        self.end_turn_received = False
                         
                     elif prev_game_state['turn_status'] == 'start game' and self.first_move_complete == False:
                         self.first_move_complete = True # Ensure this only updates once, doesn't interfere with end turn later
                         # print('Game_controller: updating player turn')
+                        self.end_turn_received = False
                         self.on_playerid_turn = prev_game_state['next_player']
                         self.on_playername_turn = prev_game_state['next_playername_turn']
+                        print("Player taking turn: ", self.on_playername_turn)
                     # END TURN finished
                     elif prev_game_state['turn_status'] == 'end turn':
+                        prev_player = self.on_playerid_turn
+                        #self.state = 'START'
                         # Update player turn to next player
                         self.on_playerid_turn = prev_game_state['next_player']
                         self.on_playername_turn = prev_game_state['next_playername_turn']
-                    # print(f'prev_game_state is now {prev_game_state}')
+                        
+                        if not self.end_turn_received:
+                            print(f"Player {prev_player} ended their turn.")
+                            if self.on_playerid_turn == self.player_id:
+                                print(f"It's your turn!")
+                            else:
+                                print(f"It's {self.on_playername_turn}'s turn")
+                            self.end_turn_received = True
+                        # print(f'prev_game_state is now {prev_game_state}')
                           
                 except:
                     print("Couldn't process_server_update")
@@ -209,7 +223,7 @@ class Game_controller:
                 # print the valid rooms in the bottom lefthand corner of the window
                 message_font_02 = pygame.font.SysFont('Comic Sans MS', 20)
                 message_surface_02 = message_font_02.render("Valid rooms: " + str(allowed_tiles), False, (120,39,64), (202, 228, 241))
-                print("Valid rooms: " + str(prev_game_state.get('valid_tile_names_for_player')))
+                #print("Valid rooms: " + str(prev_game_state.get('valid_tile_names_for_player')))
                 # message_surface_rect_02 = message_surface_02.get_rect(topleft = (100,750))
                 self.screen.blit(message_surface_02, (100,650))
 
@@ -242,8 +256,8 @@ class Game_controller:
                         self.state = "MOVEMENT"
                         self.move_token(self.player_token, self.tiles_directory[self.room_choice][1])
                         # self.network.send(turn_data)
-                        print("turn_data is", turn_data)
-                        print(f"sending message to server for movement: {self.player_id}, {self.state}, {self.room_choice}")
+                        #print("turn_data is", turn_data)
+                        #print(f"sending message to server for movement: {self.player_id}, {self.state}, {self.room_choice}")
                         self.state = 'START'
 
                 #Manually record the rectangle position of close button. Everytime this button is pressed, close the options box
@@ -399,10 +413,11 @@ class Game_controller:
         # if player chooose end turn, then it passes the turn to others.
         if isEndTurnSelectionActive:
             self.state = "END TURN"
-            # self.board.load_options(self.screen, self.state, events)
+            self.board.load_options(self.screen, self.state, events)
             turn_data = self.network.build_client_package(self.player_id, self.state, str(mousePos), '','') # 'next_player': '', 'next_playername_turn':''
             # #print(turn_data)
             self.network.send(turn_data)
+            self.state = 'START'
         if self.lost == True:
             self.board.display_update(self.screen, "Sorry, You Lost!", (300, 30))
             board_surface = pygame.Surface((2000,2000))
@@ -536,8 +551,8 @@ class Game_controller:
             print(f"Success! Player {prev_game_state['player_id']} has moved to {prev_game_state['player_location']}!")    
             self.move_token(prev_game_state['moved_player'], self.tiles_directory[prev_game_state['player_location']][1])
             print("moved_player is", prev_game_state['moved_player'])
-            print(self.tiles_directory[prev_game_state['player_location']][1])
-            print(self.player_token)
+            #print(self.tiles_directory[prev_game_state['player_location']][1])
+            #print(self.player_token)
             #game_data = self.network.build_client_package(self.player_id, 'get', self.player_token)
             if this_player_id == self.player_id:
                 # TO DO better way of displaying text instead of blit
