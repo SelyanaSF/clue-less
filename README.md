@@ -8,9 +8,6 @@
 3. Activate the environment. \
   `conda activate doclue_env`
 
-## Run the game:
-On your main directory, run `start.py` or `python3 start.py`
-
 ## Run multi-player game:
 Open multiple terminals
 - 1 terminal for the server/splash screen
